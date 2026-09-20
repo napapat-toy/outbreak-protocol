@@ -6,6 +6,7 @@ import { GameMap } from '../components/GameMap';
 import { GameOverModal } from '../components/GameOverModal';
 import { GameSetupModal } from '../components/GameSetupModal';
 import { GuideModal } from '../components/GuideModal';
+import { LiveEventBanner } from '../components/topbar/LiveEventBanner';
 import { StartScreen } from '../components/StartScreen';
 import { TopBar } from '../components/TopBar';
 import { useGameEngine } from '../hooks/useGameEngine';
@@ -50,15 +51,20 @@ export default function GamePage() {
             onReturnToMenu={actions.returnToMainMenu}
           />
 
+          {/* Sub-Header Live Event Banner */}
+          <LiveEventBanner
+            events={events}
+            onOpenHistory={modals.openAnalytics}
+          />
+
           {/* Main Map Arena - Edge-to-Edge Full Viewport */}
           <main className="flex-1 w-full h-full relative overflow-hidden flex flex-col">
-            {/* Tactical Map with integrated side dock & alert ticker */}
+            {/* Tactical Map with integrated side dock */}
             <GameMap
               state={gameState}
               selectedProvinceId={selectedProvinceId}
               onSelectProvince={actions.setSelectedProvinceId}
               onDeployAction={actions.deployAction}
-              latestEvent={events[0]}
             />
 
             {/* Floating Time Controls Bar (Capsule at bottom center) */}

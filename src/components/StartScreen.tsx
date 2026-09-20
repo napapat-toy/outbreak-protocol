@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { clearSavedGame, getSavedGameSummary, SavedGameSummary } from '../lib/storage';
+import { useState, useSyncExternalStore } from 'react';
+import { clearSavedGame, getSavedGameSummary, STORAGE_KEY } from '../lib/storage';
 
 interface StartScreenProps {
   onContinue: () => void;
@@ -9,19 +9,35 @@ interface StartScreenProps {
   onOpenGuide: () => void;
 }
 
+function subscribe(callback: () => void) {
+  window.addEventListener('storage', callback);
+  return () => window.removeEventListener('storage', callback);
+}
+
+function getSnapshot(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function getServerSnapshot(): string | null {
+  return null;
+}
+
 export function StartScreen({
   onContinue,
   onNewGame,
   onOpenGuide,
 }: StartScreenProps) {
-  const [saveSummary, setSaveSummary] = useState<SavedGameSummary | null>(() =>
-    getSavedGameSummary()
-  );
+  const savedRaw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const saveSummary = savedRaw ? getSavedGameSummary() : null;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDeleteSave = () => {
     clearSavedGame();
-    setSaveSummary(null);
+    window.dispatchEvent(new Event('storage'));
     setShowDeleteConfirm(false);
   };
 

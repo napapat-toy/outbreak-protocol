@@ -1,7 +1,7 @@
 'use client';
 
 import { CONNECTIONS, PROVINCES } from '../lib/constants';
-import { ActionType, GameLogEvent, GameState, Province } from '../lib/types';
+import { ActionType, GameState, Province } from '../lib/types';
 import { MAP_CONFIG } from '../lib/ui-constants';
 import { useMapPanZoom } from '../hooks/useMapPanZoom';
 import { MapControls } from './map/MapControls';
@@ -15,7 +15,6 @@ interface GameMapProps {
   selectedProvinceId: string | null;
   onSelectProvince: (id: string | null) => void;
   onDeployAction: (provinceId: string, actionKey: ActionType) => void;
-  latestEvent?: GameLogEvent;
 }
 
 const PROVINCE_MAP = new Map<string, Province>(PROVINCES.map((p) => [p.id, p]));
@@ -25,7 +24,6 @@ export function GameMap({
   selectedProvinceId,
   onSelectProvince,
   onDeployAction,
-  latestEvent,
 }: GameMapProps) {
   const {
     pan,
@@ -70,28 +68,6 @@ export function GameMap({
 
       {/* Map Legend (Top Left) */}
       <MapLegend />
-
-      {/* Live Alert Ticker (Top Right) */}
-      {latestEvent && (
-        <div
-          className={`absolute top-3 z-10 flex items-center gap-2 shadow-lg animate-fadeIn max-w-xs sm:max-w-md bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs backdrop-blur-md transition-all duration-300 ${
-            selectedProvinceId ? 'right-3 sm:right-[340px]' : 'right-3'
-          }`}
-        >
-          <span className="text-sm">
-            {latestEvent.type === 'danger' || latestEvent.type === 'warn'
-              ? '🚨'
-              : latestEvent.type === 'success'
-                ? '🎉'
-                : latestEvent.type === 'action'
-                  ? '🚀'
-                  : '📢'}
-          </span>
-          <span className="truncate text-slate-300 text-[11px] font-medium">
-            {latestEvent.text}
-          </span>
-        </div>
-      )}
 
       {/* Zoom / Pan Controls (Bottom Left) */}
       <MapControls

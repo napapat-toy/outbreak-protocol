@@ -30,8 +30,8 @@ export function AnalyticsDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="drawer-overlay">
-      <div className="drawer-box">
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className="drawer-box" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="panel-header">
           <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export function AnalyticsDrawer({
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0 space-y-4">
           {activeTab === 'chart' && (
             <div className="space-y-3">
               <EpidemicChart history={state.history} />
@@ -105,7 +105,7 @@ export function AnalyticsDrawer({
           )}
 
           {activeTab === 'logs' && (
-            <div className="h-full max-h-[500px]">
+            <div className="flex-1 flex flex-col min-h-0 h-full">
               <EventLog events={events} />
             </div>
           )}

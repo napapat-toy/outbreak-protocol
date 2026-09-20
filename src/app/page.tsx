@@ -114,6 +114,7 @@ export default function GamePage() {
       <GuideModal
         isOpen={modals.isGuideOpen}
         onClose={modals.closeGuide}
+        pathogenId={gameState.pathogenId}
       />
 
       <GameOverModal

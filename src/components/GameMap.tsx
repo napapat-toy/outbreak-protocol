@@ -64,7 +64,9 @@ export function GameMap({
     >
       {/* Background Grid & Radar styling */}
       <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none" />
+      {/* Subtle edge vignette (gentle edge softening without obscuring southern nodes) */}
+      <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-slate-950/60 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-slate-950/40 to-transparent pointer-events-none" />
 
       {/* Map Legend (Top Left) */}
       <MapLegend />

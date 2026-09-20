@@ -26,7 +26,10 @@ export function MapNode({
   );
 
   const measures = provinceState.measures;
-  const hasMeasures = (measures.health ?? 0) > 0 || (measures.checkpoint ?? 0) > 0 || (measures.medical ?? 0) > 0;
+  const activeMeasures: string[] = [];
+  if ((measures.health ?? 0) > 0) activeMeasures.push('🏥');
+  if ((measures.checkpoint ?? 0) > 0) activeMeasures.push('🚧');
+  if ((measures.medical ?? 0) > 0) activeMeasures.push('🚑');
 
   return (
     <g
@@ -69,11 +72,27 @@ export function MapNode({
         className="transition-all duration-200 group-hover:brightness-125 shadow-lg"
       />
 
-      {/* Hub badge */}
+      {/* Hub badge (Dedicated Bottom-Left Arc - completely clear of top measures) */}
       {province.hub && (
         <g className="pointer-events-none select-none">
-          <circle r={radius - 4} fill="none" stroke="#ffffff33" strokeWidth={1} strokeDasharray="2,2" />
-          <text x={radius - 5} y={-radius + 7} fontSize="9" fill="#38bdf8" className="font-bold">✈</text>
+          <circle
+            cx={-radius * 0.72}
+            cy={radius * 0.70}
+            r={7}
+            fill="#090d16"
+            stroke="#38bdf8"
+            strokeWidth={1.2}
+          />
+          <text
+            x={-radius * 0.72}
+            y={radius * 0.70}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize="8"
+            fill="#38bdf8"
+          >
+            ✈
+          </text>
         </g>
       )}
 
@@ -95,31 +114,69 @@ export function MapNode({
           : '0%'}
       </text>
 
-      {/* Active Measures Badges */}
-      {hasMeasures && (
-        <g transform={`translate(${radius - 4}, ${-radius + 4})`} className="pointer-events-none select-none">
-          {(measures.health ?? 0) > 0 && <text x={-14} y={-4} fontSize="9">🏥</text>}
-          {(measures.checkpoint ?? 0) > 0 && <text x={-4} y={-4} fontSize="9">🚧</text>}
-          {(measures.medical ?? 0) > 0 && <text x={6} y={-4} fontSize="9">🚑</text>}
+      {/* Active Measures Badges (Floating Centered Pill Above Node) */}
+      {activeMeasures.length > 0 && (
+        <g
+          transform={`translate(0, ${-radius - 8})`}
+          className="pointer-events-none select-none"
+        >
+          {(() => {
+            const pillWidth = activeMeasures.length * 15 + 6;
+            const startX = -pillWidth / 2;
+            return (
+              <>
+                <rect
+                  x={startX}
+                  y={-8}
+                  width={pillWidth}
+                  height={16}
+                  rx={8}
+                  fill="#090d16"
+                  stroke="#334155"
+                  strokeWidth={1}
+                />
+                {activeMeasures.map((icon, idx) => (
+                  <text
+                    key={idx}
+                    x={startX + 10.5 + idx * 15}
+                    y={0.5}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="9.5"
+                  >
+                    {icon}
+                  </text>
+                ))}
+              </>
+            );
+          })()}
         </g>
       )}
 
-      {/* Province Labels */}
+      {/* Province Labels with crisp dark outline */}
       <text
-        y={radius + 13}
+        y={radius + 15}
         textAnchor="middle"
         fill={isSelected ? '#38bdf8' : '#e2e8f0'}
         fontSize="11"
-        fontWeight={isSelected ? 'bold' : '500'}
-        className="pointer-events-none drop-shadow-md select-none transition-colors"
+        fontWeight={isSelected ? 'bold' : '600'}
+        stroke="#070b14"
+        strokeWidth="3.5"
+        paintOrder="stroke fill"
+        strokeLinejoin="round"
+        className="pointer-events-none select-none transition-colors"
       >
         {province.name}
       </text>
       <text
-        y={radius + 23}
+        y={radius + 26}
         textAnchor="middle"
-        fill="#64748b"
+        fill={isSelected ? '#93c5fd' : '#64748b'}
         fontSize="8.5"
+        stroke="#070b14"
+        strokeWidth="2.5"
+        paintOrder="stroke fill"
+        strokeLinejoin="round"
         className="pointer-events-none select-none font-sans"
       >
         {province.nameEn}

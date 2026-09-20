@@ -5,14 +5,14 @@
 
 export const MAP_CONFIG = {
   viewBox: {
-    x: 160,
-    y: 50,
-    width: 400,
-    height: 400,
+    x: 140,
+    y: 35,
+    width: 450,
+    height: 440,
   },
   center: {
-    x: 360,
-    y: 250,
+    x: 365,
+    y: 255,
   },
   dockOffsetCenter: {
     x: 310,
@@ -30,8 +30,8 @@ export const MAP_CONFIG = {
     touch: 8,
   },
   node: {
-    baseRadius: 14,
-    populationScaleDivisor: 140,
+    baseRadius: 13,
+    populationScaleDivisor: 150,
   },
 } as const;
 

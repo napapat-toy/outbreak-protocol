@@ -8,7 +8,7 @@ interface EventLogProps {
 
 export function EventLog({ events }: EventLogProps) {
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-2.5 h-full max-h-[360px]">
+    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-2.5 h-full flex-1 min-h-0">
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
         <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
           <span>📡 บันทึกรายงานสถานการณ์ (Live Intel)</span>

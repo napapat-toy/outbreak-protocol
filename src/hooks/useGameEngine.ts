@@ -172,6 +172,7 @@ export function useGameEngine() {
     setIsGameOverDismissed(false);
     setIsSetupOpen(false);
     setIsInMainMenu(false);
+    setIsGuideOpen(true);
 
     const labProv = getProvinceById(labProvinceId);
     const pathogen = PATHOGENS[pathogenId];

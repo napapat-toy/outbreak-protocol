@@ -43,16 +43,16 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
 };
 
 export const PROVINCES: Province[] = [
-  { id: 'bkk', name: 'กรุงเทพมหานคร', nameEn: 'Bangkok', pop: 5527987, x: 340, y: 300, hub: true },
-  { id: 'non', name: 'นนทบุรี', nameEn: 'Nonthaburi', pop: 1274278, x: 300, y: 255, hub: false },
-  { id: 'ptt', name: 'ปทุมธานี', nameEn: 'Pathum Thani', pop: 1144470, x: 345, y: 200, hub: false },
-  { id: 'spk', name: 'สมุทรปราการ', nameEn: 'Samut Prakan', pop: 1377872, x: 400, y: 345, hub: true },
-  { id: 'npt', name: 'นครปฐม', nameEn: 'Nakhon Pathom', pop: 923061, x: 255, y: 320, hub: false },
-  { id: 'skn', name: 'สมุทรสาคร', nameEn: 'Samut Sakhon', pop: 583929, x: 280, y: 370, hub: false },
-  { id: 'ccs', name: 'ฉะเชิงเทรา', nameEn: 'Chachoengsao', pop: 720933, x: 450, y: 300, hub: false },
-  { id: 'aya', name: 'พระนครศรีอยุธยา', nameEn: 'Ayutthaya', pop: 826983, x: 330, y: 145, hub: false },
-  { id: 'sri', name: 'สระบุรี', nameEn: 'Saraburi', pop: 635937, x: 400, y: 130, hub: false },
-  { id: 'cbi', name: 'ชลบุรี', nameEn: 'Chonburi', pop: 1621996, x: 470, y: 390, hub: true },
+  { id: 'bkk', name: 'กรุงเทพมหานคร', nameEn: 'Bangkok', pop: 5527987, x: 340, y: 305, hub: true },
+  { id: 'non', name: 'นนทบุรี', nameEn: 'Nonthaburi', pop: 1274278, x: 280, y: 245, hub: false },
+  { id: 'ptt', name: 'ปทุมธานี', nameEn: 'Pathum Thani', pop: 1144470, x: 345, y: 185, hub: false },
+  { id: 'spk', name: 'สมุทรปราการ', nameEn: 'Samut Prakan', pop: 1377872, x: 420, y: 365, hub: true },
+  { id: 'npt', name: 'นครปฐม', nameEn: 'Nakhon Pathom', pop: 923061, x: 225, y: 325, hub: false },
+  { id: 'skn', name: 'สมุทรสาคร', nameEn: 'Samut Sakhon', pop: 583929, x: 265, y: 395, hub: false },
+  { id: 'ccs', name: 'ฉะเชิงเทรา', nameEn: 'Chachoengsao', pop: 720933, x: 480, y: 295, hub: false },
+  { id: 'aya', name: 'พระนครศรีอยุธยา', nameEn: 'Ayutthaya', pop: 826983, x: 325, y: 115, hub: false },
+  { id: 'sri', name: 'สระบุรี', nameEn: 'Saraburi', pop: 635937, x: 425, y: 95, hub: false },
+  { id: 'cbi', name: 'ชลบุรี', nameEn: 'Chonburi', pop: 1621996, x: 500, y: 420, hub: true },
 ];
 
 export const TOTAL_POPULATION = PROVINCES.reduce((sum, p) => sum + p.pop, 0);

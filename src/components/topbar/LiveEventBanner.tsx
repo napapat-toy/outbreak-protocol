@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { GameLogEvent } from '../../lib/types';
 
 interface LiveEventBannerProps {
@@ -9,29 +8,9 @@ interface LiveEventBannerProps {
 }
 
 export function LiveEventBanner({ events, onOpenHistory }: LiveEventBannerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevLatestId, setPrevLatestId] = useState(events[0]?.id);
-
-  // Automatically reset to the newest event when a new event arrives
-  if (events[0]?.id !== prevLatestId) {
-    setPrevLatestId(events[0]?.id);
-    setCurrentIndex(0);
-  }
-
   if (!events || events.length === 0) return null;
 
-  const currentEvent = events[currentIndex] || events[0];
-  const totalEvents = Math.min(events.length, 10); // Cycle up to 10 latest events
-
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : totalEvents - 1));
-  };
-
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex((prev) => (prev < totalEvents - 1 ? prev + 1 : 0));
-  };
+  const currentEvent = events[0];
 
   const getEventBadge = (type: GameLogEvent['type']) => {
     switch (type) {
@@ -92,33 +71,8 @@ export function LiveEventBanner({ events, onOpenHistory }: LiveEventBannerProps)
         </div>
       </div>
 
-      {/* Right: Controls & History Shortcut */}
+      {/* Right: History Shortcut */}
       <div className="flex items-center gap-2 flex-shrink-0 text-slate-400">
-        {/* Event Cycle Navigator (if multiple events) */}
-        {totalEvents > 1 && (
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-0.5 text-[10px] font-mono">
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="hover:text-white px-1 cursor-pointer transition-colors"
-              title="ข้อความก่อนหน้า"
-            >
-              ◀
-            </button>
-            <span className="text-slate-500 select-none">
-              {currentIndex + 1}/{totalEvents}
-            </span>
-            <button
-              type="button"
-              onClick={handleNext}
-              className="hover:text-white px-1 cursor-pointer transition-colors"
-              title="ข้อความถัดไป"
-            >
-              ▶
-            </button>
-          </div>
-        )}
-
         {/* Open History Drawer */}
         <button
           type="button"

@@ -15,6 +15,7 @@ interface TopBarProps {
   onToggleAnalytics: () => void;
   isAnalyticsOpen: boolean;
   onInvestResearch: () => void;
+  onReturnToMenu?: () => void;
 }
 
 export function TopBar({
@@ -24,6 +25,7 @@ export function TopBar({
   onToggleAnalytics,
   isAnalyticsOpen,
   onInvestResearch,
+  onReturnToMenu,
 }: TopBarProps) {
   const pathogen = PATHOGENS[state.pathogenId];
   const difficulty = DIFFICULTIES[state.difficultyId] || DIFFICULTIES.standard;
@@ -127,11 +129,23 @@ export function TopBar({
           {/* New Game Button */}
           <button
             onClick={onNewGame}
-            className="p-1.5 sm:px-2 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+            className="p-1.5 sm:px-2 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all active:scale-98 cursor-pointer"
             title="เริ่มเกมใหม่ / ปรับระดับความยาก"
           >
             🔄
           </button>
+
+          {/* Main Menu Button */}
+          {onReturnToMenu && (
+            <button
+              onClick={onReturnToMenu}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all active:scale-98 cursor-pointer flex items-center gap-1.5"
+              title="บันทึกและกลับสู่หน้าเมนูหลัก"
+            >
+              <span>🏠</span>
+              <span className="hidden md:inline text-[11px]">เมนูหลัก</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

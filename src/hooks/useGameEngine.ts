@@ -9,9 +9,11 @@ import {
   investResearch,
   simulateTick,
 } from '../lib/simulation';
+import { loadGame, saveGame } from '../lib/storage';
 import { ActionType, DifficultyId, GameLogEvent, GameState, PathogenId } from '../lib/types';
 
 export function useGameEngine() {
+  const [isInMainMenu, setIsInMainMenu] = useState<boolean>(true);
   const [gameState, setGameState] = useState<GameState>(() =>
     freshState('bkk', 'flu', 'casual')
   );
@@ -33,12 +35,27 @@ export function useGameEngine() {
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState<boolean>(false);
   const [isGameOverDismissed, setIsGameOverDismissed] = useState<boolean>(false);
 
-  const showGameOverModal = gameState.ended && !isGameOverDismissed;
+  const showGameOverModal = gameState.ended && !isGameOverDismissed && !isInMainMenu;
 
   const gameStateRef = useRef(gameState);
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
+
+  const eventsRef = useRef(events);
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+
+  const selectedProvinceRef = useRef(selectedProvinceId);
+  useEffect(() => {
+    selectedProvinceRef.current = selectedProvinceId;
+  }, [selectedProvinceId]);
+
+  // Auto-save helper
+  const triggerAutoSave = useCallback((state: GameState, evs: GameLogEvent[], provId: string | null) => {
+    saveGame(state, evs, provId);
+  }, []);
 
   // Advance 1 day
   const handleNextDay = useCallback(() => {
@@ -50,18 +67,23 @@ export function useGameEngine() {
     const { nextState, events: newEvents } = simulateTick(gameStateRef.current);
     setGameState(nextState);
 
+    let updatedEvents = eventsRef.current;
     if (newEvents.length > 0) {
-      setEvents((prev) => [...newEvents.reverse(), ...prev].slice(0, 50));
+      updatedEvents = [...newEvents.reverse(), ...eventsRef.current].slice(0, 50);
+      setEvents(updatedEvents);
     }
 
     if (nextState.ended) {
       setIsRunning(false);
     }
-  }, []);
+
+    // Auto-save on simulation tick
+    triggerAutoSave(nextState, updatedEvents, selectedProvinceRef.current);
+  }, [triggerAutoSave]);
 
   // Timer loop for auto run
   useEffect(() => {
-    if (!isRunning || gameState.ended) return;
+    if (!isRunning || gameState.ended || isInMainMenu) return;
 
     const delay = Math.max(100, 1400 - sliderSpeed);
     const interval = setInterval(() => {
@@ -69,7 +91,7 @@ export function useGameEngine() {
     }, delay);
 
     return () => clearInterval(interval);
-  }, [isRunning, sliderSpeed, gameState.ended, handleNextDay]);
+  }, [isRunning, sliderSpeed, gameState.ended, isInMainMenu, handleNextDay]);
 
   // Player action deployment
   const handleDeployAction = (provinceId: string, actionKey: ActionType) => {
@@ -78,28 +100,32 @@ export function useGameEngine() {
 
     const result = applyAction(gameState, provinceId, actionKey);
     if (!result.success) {
-      setEvents((prev) => [
+      const updatedEvents: GameLogEvent[] = [
         {
           id: `err-${Date.now()}`,
           day: gameState.day,
           text: `❌ ไม่สามารถส่ง${action.name}ได้: ${result.reason}`,
           type: 'warn',
         },
-        ...prev,
-      ]);
+        ...events,
+      ];
+      setEvents(updatedEvents);
       return;
     }
 
-    setGameState(result.nextState);
-    setEvents((prev) => [
+    const updatedEvents: GameLogEvent[] = [
       {
         id: `deploy-${Date.now()}`,
         day: gameState.day,
         text: `🚀 ส่ง${action.name}เข้าประจำการ ณ ${province?.name} (${action.duration > 0 ? `ระยะเวลา ${action.duration} วัน` : 'มีผลทันที'})`,
         type: 'action',
       },
-      ...prev,
-    ]);
+      ...events,
+    ];
+
+    setGameState(result.nextState);
+    setEvents(updatedEvents);
+    triggerAutoSave(result.nextState, updatedEvents, provinceId);
   };
 
   // Vaccine research investment
@@ -110,29 +136,34 @@ export function useGameEngine() {
     setGameState(result.nextState);
     const pathogen = PATHOGENS[gameState.pathogenId];
 
+    let updatedEvents: GameLogEvent[];
     if (result.nextState.vaccineReady && !gameState.vaccineReady) {
-      setEvents((prev) => [
+      updatedEvents = [
         {
           id: `vac-ready-${Date.now()}`,
           day: gameState.day,
           text: `🎉 วิจัยวัคซีนต้าน ${pathogen.name} สำเร็จแล้ว! เริ่มแจกจ่ายฉีดวัคซีนวันละ 5% ของผู้ยังไม่ติดเชื้อทันที`,
           type: 'success',
         },
-        ...prev,
-      ]);
+        ...events,
+      ];
     } else {
-      setEvents((prev) => [
+      updatedEvents = [
         {
           id: `res-${Date.now()}`,
           day: gameState.day,
           text: `🧪 ทุ่มงบวิจัยวัคซีน 25G — ความคืบหน้าเพิ่มขึ้นเป็น ${Math.round(result.nextState.research)}%`,
           type: 'info',
         },
-        ...prev,
-      ]);
+        ...events,
+      ];
     }
+
+    setEvents(updatedEvents);
+    triggerAutoSave(result.nextState, updatedEvents, selectedProvinceId);
   };
 
+  // Start new game
   const handleStartGame = (labProvinceId: string, pathogenId: PathogenId, difficultyId: DifficultyId) => {
     const next = freshState(labProvinceId, pathogenId, difficultyId);
     setGameState(next);
@@ -140,19 +171,43 @@ export function useGameEngine() {
     setSelectedProvinceId(labProvinceId);
     setIsGameOverDismissed(false);
     setIsSetupOpen(false);
+    setIsInMainMenu(false);
 
     const labProv = getProvinceById(labProvinceId);
     const pathogen = PATHOGENS[pathogenId];
     const diff = DIFFICULTIES[difficultyId];
 
-    setEvents([
+    const initialEvents: GameLogEvent[] = [
       {
         id: `start-${Date.now()}`,
         day: 0,
         text: `🦠 เริ่มต้นภารกิจควบคุม ${pathogen.name} ณ ${labProv?.name} (ระดับ: ${diff.name})`,
         type: 'danger',
       },
-    ]);
+    ];
+
+    setEvents(initialEvents);
+    triggerAutoSave(next, initialEvents, labProvinceId);
+  };
+
+  // Continue existing saved game
+  const handleContinueGame = () => {
+    const save = loadGame();
+    if (!save) return;
+
+    setGameState(save.gameState);
+    setEvents(save.events || []);
+    setSelectedProvinceId(save.selectedProvinceId || 'bkk');
+    setIsRunning(false);
+    setIsGameOverDismissed(false);
+    setIsInMainMenu(false);
+  };
+
+  // Return to main menu (auto-saves beforehand)
+  const handleReturnToMainMenu = () => {
+    setIsRunning(false);
+    triggerAutoSave(gameState, events, selectedProvinceId);
+    setIsInMainMenu(true);
   };
 
   const handleQuickRestart = () => {
@@ -160,6 +215,7 @@ export function useGameEngine() {
   };
 
   return {
+    isInMainMenu,
     gameState,
     isRunning,
     sliderSpeed,
@@ -187,6 +243,8 @@ export function useGameEngine() {
       investResearch: handleInvestResearch,
       startGame: handleStartGame,
       quickRestart: handleQuickRestart,
+      continueGame: handleContinueGame,
+      returnToMainMenu: handleReturnToMainMenu,
     },
   };
 }

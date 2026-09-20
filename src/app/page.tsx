@@ -6,11 +6,13 @@ import { GameMap } from '../components/GameMap';
 import { GameOverModal } from '../components/GameOverModal';
 import { GameSetupModal } from '../components/GameSetupModal';
 import { GuideModal } from '../components/GuideModal';
+import { StartScreen } from '../components/StartScreen';
 import { TopBar } from '../components/TopBar';
 import { useGameEngine } from '../hooks/useGameEngine';
 
 export default function GamePage() {
   const {
+    isInMainMenu,
     gameState,
     isRunning,
     sliderSpeed,
@@ -22,62 +24,75 @@ export default function GamePage() {
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans select-none">
-      {/* Top Header & HUD */}
-      <TopBar
-        state={gameState}
-        onNewGame={() => {
-          modals.dismissGameOver();
-          modals.openSetup();
-        }}
-        onOpenGuide={modals.openGuide}
-        onToggleAnalytics={() =>
-          modals.isAnalyticsOpen ? modals.closeAnalytics() : modals.openAnalytics()
-        }
-        isAnalyticsOpen={modals.isAnalyticsOpen}
-        onInvestResearch={actions.investResearch}
-      />
-
-      {/* Main Map Arena */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-2 sm:p-4 flex flex-col items-center justify-center relative">
-        <div className="w-full relative">
-          {/* Tactical Map with integrated side dock & alert ticker */}
-          <GameMap
+      {isInMainMenu ? (
+        /* Title / Start Screen */
+        <StartScreen
+          onContinue={actions.continueGame}
+          onNewGame={modals.openSetup}
+          onOpenGuide={modals.openGuide}
+        />
+      ) : (
+        /* Main Command Bridge & Tactical Map */
+        <>
+          {/* Top Header & HUD */}
+          <TopBar
             state={gameState}
-            selectedProvinceId={selectedProvinceId}
-            onSelectProvince={actions.setSelectedProvinceId}
-            onDeployAction={actions.deployAction}
-            latestEvent={events[0]}
+            onNewGame={() => {
+              modals.dismissGameOver();
+              modals.openSetup();
+            }}
+            onOpenGuide={modals.openGuide}
+            onToggleAnalytics={() =>
+              modals.isAnalyticsOpen ? modals.closeAnalytics() : modals.openAnalytics()
+            }
+            isAnalyticsOpen={modals.isAnalyticsOpen}
+            onInvestResearch={actions.investResearch}
+            onReturnToMenu={actions.returnToMainMenu}
           />
 
-          {/* Floating Time Controls Bar (Capsule at bottom center) */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-            <GameControls
-              day={gameState.day}
-              isRunning={isRunning}
-              sliderSpeed={sliderSpeed}
-              isEnded={gameState.ended}
-              onNextDay={actions.nextDay}
-              onTogglePlay={actions.togglePlay}
-              onSpeedChange={actions.setSliderSpeed}
-            />
-          </div>
-        </div>
-      </main>
+          {/* Main Map Arena */}
+          <main className="flex-1 max-w-6xl w-full mx-auto p-2 sm:p-4 flex flex-col items-center justify-center relative">
+            <div className="w-full relative">
+              {/* Tactical Map with integrated side dock & alert ticker */}
+              <GameMap
+                state={gameState}
+                selectedProvinceId={selectedProvinceId}
+                onSelectProvince={actions.setSelectedProvinceId}
+                onDeployAction={actions.deployAction}
+                latestEvent={events[0]}
+              />
 
-      {/* Minimal Bottom Bar */}
-      <footer className="border-t border-slate-900 py-2.5 px-4 text-center text-[11px] text-slate-500">
-        Outbreak Protocol • คลิกที่จังหวัดบนแผนที่เพื่อส่งหน่วยงาน • เปิดดูสถิติกราฟที่ปุ่ม &quot;ข้อมูลวิเคราะห์&quot; มุมขวาบน
-      </footer>
+              {/* Floating Time Controls Bar (Capsule at bottom center) */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+                <GameControls
+                  day={gameState.day}
+                  isRunning={isRunning}
+                  sliderSpeed={sliderSpeed}
+                  isEnded={gameState.ended}
+                  onNextDay={actions.nextDay}
+                  onTogglePlay={actions.togglePlay}
+                  onSpeedChange={actions.setSliderSpeed}
+                />
+              </div>
+            </div>
+          </main>
 
-      {/* Analytics & Deep Intel Drawer */}
-      <AnalyticsDrawer
-        isOpen={modals.isAnalyticsOpen}
-        state={gameState}
-        events={events}
-        onClose={modals.closeAnalytics}
-      />
+          {/* Minimal Bottom Bar */}
+          <footer className="border-t border-slate-900 py-2.5 px-4 text-center text-[11px] text-slate-500">
+            Outbreak Protocol • คลิกที่จังหวัดบนแผนที่เพื่อส่งหน่วยงาน • เปิดดูสถิติกราฟที่ปุ่ม &quot;ข้อมูลวิเคราะห์&quot; มุมขวาบน
+          </footer>
 
-      {/* Modals */}
+          {/* Analytics & Deep Intel Drawer */}
+          <AnalyticsDrawer
+            isOpen={modals.isAnalyticsOpen}
+            state={gameState}
+            events={events}
+            onClose={modals.closeAnalytics}
+          />
+        </>
+      )}
+
+      {/* Modals (available from both StartScreen and Game Screen) */}
       <GameSetupModal
         isOpen={modals.isSetupOpen}
         onClose={modals.closeSetup}

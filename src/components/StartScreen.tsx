@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
-import { clearSavedGame, getSavedGameSummary, STORAGE_KEY } from '../lib/storage';
+import { clearSavedGame, getRawSavedData, getSavedGameSummary } from '../lib/storage';
 
 interface StartScreenProps {
   onContinue: () => void;
@@ -15,11 +15,7 @@ function subscribe(callback: () => void) {
 }
 
 function getSnapshot(): string | null {
-  try {
-    return localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
+  return getRawSavedData();
 }
 
 function getServerSnapshot(): string | null {

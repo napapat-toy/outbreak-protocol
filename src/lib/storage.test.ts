@@ -72,4 +72,38 @@ describe('Storage Module', () => {
     expect(loadGame()).toBeNull();
     expect(getSavedGameSummary()).toBeNull();
   });
+
+  it('loads valid game data regardless of version presence (version-agnostic)', () => {
+    const state = freshState('bkk', 'flu', 'casual');
+    // Save data without any version field
+    const rawData = JSON.stringify({
+      savedAt: Date.now(),
+      gameState: state,
+      events: mockEvents,
+      selectedProvinceId: 'bkk',
+    });
+    window.localStorage.setItem(STORAGE_KEY, rawData);
+
+    const loaded = loadGame();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.gameState.day).toBe(0);
+    expect(loaded?.gameState.provinces.bkk.infected).toBeGreaterThan(0);
+  });
+
+  it('loads from legacy storage key if primary key is not present', () => {
+    const state = freshState('aya', 'pneumo', 'standard');
+    const legacyData = JSON.stringify({
+      version: 999, // arbitrary legacy version
+      savedAt: Date.now(),
+      gameState: state,
+      events: mockEvents,
+      selectedProvinceId: 'aya',
+    });
+    window.localStorage.setItem('outbreak_protocol_save_v1', legacyData);
+
+    expect(hasSavedGame()).toBe(true);
+    const loaded = loadGame();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.selectedProvinceId).toBe('aya');
+  });
 });

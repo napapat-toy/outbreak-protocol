@@ -1,10 +1,10 @@
 import { GameLogEvent, GameState } from './types';
 import { DIFFICULTIES, PATHOGENS, TOTAL_POPULATION } from './constants';
 
-export const STORAGE_KEY = 'outbreak_protocol_save_v1';
+export const STORAGE_KEY = 'outbreak_protocol_save';
+export const LEGACY_STORAGE_KEY = 'outbreak_protocol_save_v1';
 
 export interface SavedGame {
-  version: number;
   savedAt: number; // Date.now()
   gameState: GameState;
   events: GameLogEvent[];
@@ -27,6 +27,21 @@ export interface SavedGameSummary {
 }
 
 /**
+ * Get raw saved string from LocalStorage, checking current and legacy keys
+ */
+export function getRawSavedData(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return (
+      window.localStorage.getItem(STORAGE_KEY) ||
+      window.localStorage.getItem(LEGACY_STORAGE_KEY)
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Save the current game state to LocalStorage
  */
 export function saveGame(
@@ -38,7 +53,6 @@ export function saveGame(
 
   try {
     const payload: SavedGame = {
-      version: 1,
       savedAt: Date.now(),
       gameState,
       events: events.slice(0, 50),
@@ -53,20 +67,39 @@ export function saveGame(
 }
 
 /**
- * Load the saved game from LocalStorage
+ * Load the saved game from LocalStorage by validating structure directly
  */
 export function loadGame(): SavedGame | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = getRawSavedData();
     if (!raw) return null;
 
-    const parsed: SavedGame = JSON.parse(raw);
-    if (!parsed || !parsed.gameState || !parsed.gameState.provinces) {
+    const parsed = JSON.parse(raw);
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      !parsed.gameState ||
+      typeof parsed.gameState !== 'object' ||
+      !parsed.gameState.provinces ||
+      typeof parsed.gameState.provinces !== 'object'
+    ) {
       return null;
     }
-    return parsed;
+
+    const state = parsed.gameState as GameState;
+    if (typeof state.day !== 'number' || typeof state.budget !== 'number') {
+      return null;
+    }
+
+    return {
+      savedAt: typeof parsed.savedAt === 'number' ? parsed.savedAt : Date.now(),
+      gameState: state,
+      events: Array.isArray(parsed.events) ? parsed.events : [],
+      selectedProvinceId:
+        typeof parsed.selectedProvinceId === 'string' ? parsed.selectedProvinceId : null,
+    };
   } catch (err) {
     console.error('Failed to load game from localStorage:', err);
     return null;
@@ -87,6 +120,7 @@ export function clearSavedGame(): void {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch (err) {
     console.error('Failed to clear saved game:', err);
   }

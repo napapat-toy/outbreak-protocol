@@ -60,7 +60,7 @@ export function GameMap({
           handleSelectProvince(null);
         }
       }}
-      className={`relative w-full h-[540px] sm:h-[600px] lg:h-[660px] bg-slate-950/80 border border-slate-800/80 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center p-2 select-none ${
+      className={`relative w-full h-full flex-1 bg-[#070b14] overflow-hidden flex items-center justify-center select-none ${
         isDragging ? 'cursor-grabbing' : 'cursor-grab'
       }`}
     >

@@ -5,14 +5,14 @@
 
 export const MAP_CONFIG = {
   viewBox: {
-    x: 180,
-    y: 80,
-    width: 360,
-    height: 360,
+    x: 160,
+    y: 50,
+    width: 400,
+    height: 400,
   },
   center: {
     x: 360,
-    y: 260,
+    y: 250,
   },
   dockOffsetCenter: {
     x: 310,

@@ -121,7 +121,7 @@ export function GameMap({
       {/* SVG Canvas */}
       <svg
         viewBox={`${MAP_CONFIG.viewBox.x} ${MAP_CONFIG.viewBox.y} ${MAP_CONFIG.viewBox.width} ${MAP_CONFIG.viewBox.height}`}
-        className="w-full h-full max-h-[600px] select-none pointer-events-auto"
+        className="w-full h-full select-none pointer-events-auto overflow-visible"
       >
         {/* Background Click to dismiss selection */}
         <rect

@@ -158,11 +158,11 @@ body {
 
 /* 7. Drawers */
 .drawer-overlay {
-  @apply fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm;
+  @apply fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm overscroll-contain;
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .drawer-box {
-  @apply bg-slate-900 border-l border-slate-800 w-full max-w-xl h-full shadow-2xl flex flex-col text-slate-100;
+  @apply bg-slate-900 border-l border-slate-800 w-full max-w-xl h-full shadow-2xl flex flex-col text-slate-100 overscroll-contain;
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

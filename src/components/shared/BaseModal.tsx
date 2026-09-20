@@ -40,20 +40,41 @@ export function BaseModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, closeOnEscape, onClose]);
 
+  // Lock documentElement & body scroll when modal is open to prevent background scroll-through
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div
       onClick={closeOnBackdropClick ? onClose : undefined}
+      onWheel={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+        }
+      }}
       className={cn(
-        'fixed inset-0 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none',
+        'fixed inset-0 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none overscroll-contain overflow-hidden',
         zIndex
       )}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'bg-slate-900 border border-slate-700/80 rounded-3xl w-full p-5 sm:p-6 shadow-2xl flex flex-col text-slate-100 max-h-[92vh] overflow-y-auto custom-scrollbar relative',
+          'bg-slate-900 border border-slate-700/80 rounded-3xl w-full p-5 sm:p-6 shadow-2xl flex flex-col text-slate-100 max-h-[92vh] overflow-y-auto overscroll-contain custom-scrollbar relative',
           maxWidth,
           className
         )}

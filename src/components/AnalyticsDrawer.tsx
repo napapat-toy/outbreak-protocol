@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PROVINCES } from '../lib/constants';
 import { GameLogEvent, GameState } from '../lib/types';
 import { cn } from '../lib/utils';
@@ -27,11 +27,31 @@ export function AnalyticsDrawer({
 }: AnalyticsDrawerProps) {
   const [activeTab, setActiveTab] = useState<'chart' | 'provinces' | 'logs'>('chart');
 
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-box" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="drawer-overlay overscroll-contain"
+      onClick={onClose}
+      onWheel={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <div className="drawer-box overscroll-contain" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="panel-header">
           <div className="flex items-center gap-2">

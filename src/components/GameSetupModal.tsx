@@ -6,10 +6,11 @@ import { DifficultyId, PathogenId } from '../lib/types';
 
 interface GameSetupModalProps {
   isOpen: boolean;
+  onClose?: () => void;
   onStart: (labId: string, pathogenId: PathogenId, difficultyId: DifficultyId) => void;
 }
 
-export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
+export function GameSetupModal({ isOpen, onClose, onStart }: GameSetupModalProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyId>('casual');
   const [selectedPathogen, setSelectedPathogen] = useState<PathogenId>('flu');
   const [selectedLabId, setSelectedLabId] = useState<string>('bkk');
@@ -24,27 +25,38 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
       value <= 2 ? 'bg-emerald-400' : value <= 3 ? 'bg-amber-400' : 'bg-rose-500';
     return (
       <div className="flex items-center gap-1.5 text-[10px]">
-        <span className="text-slate-400 w-12 flex-shrink-0 text-left">{label}</span>
+        <span className="text-slate-400 w-14 flex-shrink-0 text-left whitespace-nowrap">{label}</span>
         <div className="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden">
           <div
             className={`h-full rounded-full ${barColor}`}
             style={{ width: `${value * 20}%` }}
           />
         </div>
-        <span className="text-slate-400 font-mono text-[9px] w-3 text-right">{value}</span>
+        <span className="text-slate-400 font-mono text-[9.5px] w-3 text-right">{value}</span>
       </div>
     );
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl flex flex-col gap-5 text-slate-100 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
+      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl flex flex-col gap-3.5 text-slate-100 max-h-[94vh] overflow-y-auto custom-scrollbar relative">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-sm z-10"
+            title="ปิดหน้าต่าง / กลับสู่เกมเดิม"
+          >
+            ✕
+          </button>
+        )}
+
         {/* Title Header */}
-        <div className="text-center space-y-1 border-b border-slate-800 pb-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30">
+        <div className="text-center space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-500/15 text-rose-300 text-xs font-bold border border-rose-500/30">
             <span>☣️</span> ศูนย์บัญชาการแผนเผชิญเหตุโรคระบาด
           </div>
-          <h2 className="text-2xl font-black text-white tracking-wide uppercase">
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide uppercase">
             Outbreak Protocol
           </h2>
           <p className="text-xs text-slate-400">
@@ -53,7 +65,7 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
         </div>
 
         {/* 1. Difficulty Selection */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
               <span>💰 1. ระดับความยาก & งบประมาณสนับสนุน</span>
@@ -68,23 +80,23 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
                 <div
                   key={d.id}
                   onClick={() => setSelectedDifficulty(d.id)}
-                  className={`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-2 ${
+                  className={`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-1.5 ${
                     isSelected
-                      ? 'bg-indigo-950/50 border-indigo-500 ring-2 ring-indigo-500/40 shadow-lg shadow-indigo-950/40'
+                      ? 'bg-indigo-950/60 border-indigo-500 ring-2 ring-indigo-500/40 shadow-lg shadow-indigo-950/40'
                       : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-lg">{d.icon}</span>
-                      <div className="font-bold text-xs text-white">{d.name}</div>
+                      <div className="font-bold text-xs sm:text-sm text-white">{d.name}</div>
                     </div>
-                    <p className="text-[10px] text-slate-400 leading-snug">
+                    <p className="text-[11px] text-slate-400 leading-snug">
                       {d.desc}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
+                  <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
                     <span className="text-amber-400 font-bold">เริ่ม {d.initialBudget}G</span>
                     <span className="text-emerald-400 font-bold">+{d.dailyBudgetGain}G/วัน</span>
                   </div>
@@ -95,7 +107,7 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
         </div>
 
         {/* 2. Pathogen Selection */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
             <span>🧬 2. เลือกชนิดเชื้อก่อโรค (Pathogen Type)</span>
           </label>
@@ -108,25 +120,25 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
                   onClick={() => setSelectedPathogen(p.id)}
                   className={`p-3 rounded-2xl border cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-rose-950/40 border-rose-500 ring-2 ring-rose-500/40 shadow-lg shadow-rose-950/40'
+                      ? 'bg-rose-950/50 border-rose-500 ring-2 ring-rose-500/40 shadow-lg shadow-rose-950/40'
                       : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">{p.icon}</span>
-                    <div>
-                      <div className="font-bold text-xs text-white">{p.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        ความเร็ววิจัย: {(p.treatability * 100).toFixed(0)}%
-                      </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{p.icon}</span>
+                      <div className="font-bold text-xs sm:text-sm text-white">{p.name}</div>
                     </div>
+                    <span className="text-[10.5px] text-slate-400 font-mono">
+                      ความเร็ววิจัย: {(p.treatability * 100).toFixed(0)}%
+                    </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-400 leading-snug mb-2">
+                  <p className="text-[11px] text-slate-400 leading-snug mb-2 line-clamp-1">
                     {p.desc}
                   </p>
 
-                  <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+                  <div className="space-y-1 pt-1.5 border-t border-slate-800/80">
                     {renderStatBar('แพร่เชื้อ', p.stats.spread)}
                     {renderStatBar('ความรุนแรง', p.stats.lethal)}
                     {renderStatBar('รักษายาก', p.stats.hard)}
@@ -138,7 +150,7 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
         </div>
 
         {/* 3. Origin Province Selection */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
             <span>📍 3. เลือกจังหวัดต้นตอการระบาด (Outbreak Origin)</span>
           </label>
@@ -150,39 +162,45 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
                   key={p.id}
                   type="button"
                   onClick={() => setSelectedLabId(p.id)}
-                  className={`p-2 rounded-xl border text-xs font-medium transition-all text-center cursor-pointer ${
+                  className={`py-2 px-2 rounded-xl border text-xs font-medium transition-all text-center cursor-pointer active:scale-95 ${
                     isSelected
-                      ? 'bg-indigo-600 text-white border-indigo-400 shadow-md shadow-indigo-950/50'
+                      ? 'bg-indigo-600 text-white border-indigo-400 shadow-md shadow-indigo-950/50 font-bold'
                       : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   }`}
                 >
-                  <div className="font-bold">{p.name}</div>
-                  <div className="text-[9px] opacity-70">{(p.pop / 1000000).toFixed(1)}M คน</div>
+                  <div className="font-semibold truncate">{p.name}</div>
+                  <div className="text-[9.5px] opacity-70 mt-0.5">{(p.pop / 1000000).toFixed(1)}M คน</div>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Tactical Intel Hint */}
-        <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl p-3 text-xs text-indigo-200 space-y-1">
-          <div className="font-bold flex items-center gap-1.5 text-indigo-300">
-            <span>💡 กฎเหล็กการเอาชีวิตรอด:</span>
-          </div>
+        {/* Tactical Hint */}
+        <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl px-3.5 py-2 text-xs text-indigo-200 flex items-center gap-2.5">
+          <span className="text-base flex-shrink-0">💡</span>
           <p className="text-[11px] text-indigo-200/90 leading-relaxed">
-            • <strong>วิธีชนะ:</strong> โรคนี้มีภูมิคุ้มกันเสื่อมถอย ผู้ป่วยที่หายจะวนกลับมาติดเชื้อใหม่ได้เรื่อยๆ <strong>ทางรอดเดียวคือทุ่มวิจัยวัคซีน (25G) ให้ครบ 100%</strong> เพื่อแจกจ่ายวัคซีนถาวรวันละ 5% จนกดดันยอดติดเชื้อให้ต่ำกว่า 0.1%<br />
-            • <strong>การบริหารงบ:</strong> ใช้ <strong>จุดตรวจ (🚧 Checkpoint)</strong> สกัดกั้นกรุงเทพฯ จะตัดการแพร่ข้ามจังหวัดลง 50% ทันที ประหยัดงบส่งทีมแพทย์ได้มหาศาล!
+            <strong>กฎเหล็กเอาชีวิตรอด:</strong> ทุ่มงบวิจัยวัคซีน (25G) ให้ครบ 100% เพื่อกวาดล้างเชื้อ และใช้ <strong>จุดตรวจ (🚧 Checkpoint)</strong> สกัดกั้น กทม. ช่วยตัดการแพร่ข้ามจังหวัดลง 50%
           </p>
         </div>
 
         {/* Start Game Action */}
-        <div className="pt-2 border-t border-slate-800">
+        <div className="pt-1 flex items-center gap-2.5">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs sm:text-sm border border-slate-700 transition-all active:scale-98 cursor-pointer flex-shrink-0"
+            >
+              ยกเลิก / เล่นเกมเดิม
+            </button>
+          )}
           <button
             onClick={() => onStart(selectedLabId, selectedPathogen, selectedDifficulty)}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-sm shadow-xl shadow-rose-950/60 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-rose-950/60 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
           >
             <span>🚀</span>
-            <span>เริ่มภารกิจควบคุมการระบาด (Deploy Protocol)</span>
+            <span>เริ่มภารกิจใหม่ (Deploy Protocol)</span>
           </button>
         </div>
       </div>

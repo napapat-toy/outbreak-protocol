@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { ACTIONS, CONNECTIONS, PROVINCES, UNREST_RIOT_THRESHOLD } from '../lib/constants';
-import { getProvinceById, getSusceptible } from '../lib/simulation';
+import { ACTIONS, CONNECTIONS, PROVINCES } from '../lib/constants';
+import { getProvinceById } from '../lib/simulation';
 import { ActionType, GameState } from '../lib/types';
+import { PopulationSegmentBar } from './shared/PopulationSegmentBar';
+import { UnrestMeter } from './shared/UnrestMeter';
 
 interface ProvinceFloatingMenuProps {
   provinceId: string | null;
@@ -28,17 +30,6 @@ export function ProvinceFloatingMenu({
   const pState = state.provinces[provinceId];
   if (!province || !pState) return null;
 
-  const susceptible = getSusceptible(province.pop, pState);
-  const total = province.pop;
-
-  // Segmented health bar percentages
-  const infPct = (pState.infected / total) * 100;
-  const deadPct = (pState.dead / total) * 100;
-  const vaccPct = (pState.vaccinated / total) * 100;
-  const recPct = (pState.recovered / total) * 100;
-  const healthyPct = Math.max(0, 100 - infPct - deadPct - vaccPct - recPct);
-
-  const unrestVal = Math.round(pState.unrest);
   const canDeployStandard = !state.ended && !pState.rioting && !pState.collapsed;
   const canDeployRelief = !state.ended && !pState.collapsed;
 
@@ -100,63 +91,16 @@ export function ProvinceFloatingMenu({
         ) : null}
 
         {/* Segmented Population Bar */}
-        <div className="space-y-1.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60">
-          <div className="flex items-center justify-between text-[10px] font-mono">
-            <span className="text-slate-300">
-              ติดเชื้อ: <strong className="text-rose-400 font-bold">{Math.round(pState.infected).toLocaleString()}</strong>
-            </span>
-            <span className="text-slate-400 font-medium">
-              {infPct.toFixed(1)}% ของพื้นที่
-            </span>
-          </div>
-
-          {/* Single Segmented Bar */}
-          <div className="w-full h-2 rounded-full overflow-hidden flex bg-slate-950 border border-slate-800">
-            <div style={{ width: `${infPct}%` }} className="bg-rose-500" title="ติดเชื้อ" />
-            <div style={{ width: `${recPct}%` }} className="bg-amber-400" title="หายป่วย" />
-            <div style={{ width: `${vaccPct}%` }} className="bg-indigo-400" title="ฉีดวัคซีน" />
-            <div style={{ width: `${deadPct}%` }} className="bg-zinc-700" title="เสียชีวิต" />
-            <div style={{ width: `${healthyPct}%` }} className="bg-emerald-500/70" title="ปลอดภัย" />
-          </div>
-
-          <div className="flex justify-between text-[9px] text-slate-400 pt-0.5 font-mono">
-            <span className="text-emerald-400">● ปลอดภัย {Math.round(susceptible).toLocaleString()}</span>
-            {pState.dead > 0 && <span className="text-slate-400">● ตาย {Math.round(pState.dead).toLocaleString()}</span>}
-          </div>
-        </div>
+        <PopulationSegmentBar
+          total={province.pop}
+          infected={pState.infected}
+          recovered={pState.recovered}
+          vaccinated={pState.vaccinated}
+          dead={pState.dead}
+        />
 
         {/* Unrest Bar */}
-        <div className="space-y-1 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60 text-[10px]">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-300 flex items-center gap-1.5">
-              <span className="text-xs">{unrestVal >= UNREST_RIOT_THRESHOLD ? '😡' : unrestVal >= 40 ? '😐' : '🙂'}</span>
-              <span className="font-medium">ความไม่พอใจ (Unrest)</span>
-            </span>
-            <span
-              className={`font-mono font-bold ${
-                unrestVal >= UNREST_RIOT_THRESHOLD
-                  ? 'text-rose-400 animate-pulse'
-                  : unrestVal >= 40
-                  ? 'text-amber-400'
-                  : 'text-emerald-400'
-              }`}
-            >
-              {unrestVal}% {unrestVal >= UNREST_RIOT_THRESHOLD && '(จลาจล)'}
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
-            <div
-              className={`h-full transition-all duration-300 ${
-                unrestVal >= UNREST_RIOT_THRESHOLD
-                  ? 'bg-rose-500'
-                  : unrestVal >= 40
-                  ? 'bg-amber-500'
-                  : 'bg-emerald-500'
-              }`}
-              style={{ width: `${unrestVal}%` }}
-            />
-          </div>
-        </div>
+        <UnrestMeter unrest={pState.unrest} />
 
         {/* 4 Minimal Actions */}
         <div className="space-y-2">

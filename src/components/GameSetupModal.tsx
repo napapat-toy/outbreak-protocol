@@ -19,17 +19,19 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
   const pathogenList = Object.values(PATHOGENS);
   const difficultyList = Object.values(DIFFICULTIES);
 
-  const renderStars = (count: number, color: string) => {
+  const renderStatBar = (label: string, value: number) => {
+    const barColor =
+      value <= 2 ? 'bg-emerald-400' : value <= 3 ? 'bg-amber-400' : 'bg-rose-500';
     return (
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <span
-            key={i}
-            className={`text-xs ${i <= count ? color : 'text-slate-700'}`}
-          >
-            ★
-          </span>
-        ))}
+      <div className="flex items-center gap-1.5 text-[10px]">
+        <span className="text-slate-400 w-12 flex-shrink-0 text-left">{label}</span>
+        <div className="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+          <div
+            className={`h-full rounded-full ${barColor}`}
+            style={{ width: `${value * 20}%` }}
+          />
+        </div>
+        <span className="text-slate-400 font-mono text-[9px] w-3 text-right">{value}</span>
       </div>
     );
   };
@@ -124,19 +126,10 @@ export function GameSetupModal({ isOpen, onStart }: GameSetupModalProps) {
                     {p.desc}
                   </p>
 
-                  <div className="grid grid-cols-3 gap-1 pt-2 border-t border-slate-800 text-[10px]">
-                    <div>
-                      <span className="text-slate-400">แพร่เร็ว</span>
-                      {renderStars(p.stats.spread, 'text-amber-400')}
-                    </div>
-                    <div>
-                      <span className="text-slate-400">ความรุนแรง</span>
-                      {renderStars(p.stats.lethal, 'text-rose-400')}
-                    </div>
-                    <div>
-                      <span className="text-slate-400">รักษายาก</span>
-                      {renderStars(p.stats.hard, 'text-purple-400')}
-                    </div>
+                  <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+                    {renderStatBar('แพร่เชื้อ', p.stats.spread)}
+                    {renderStatBar('ความรุนแรง', p.stats.lethal)}
+                    {renderStatBar('รักษายาก', p.stats.hard)}
                   </div>
                 </div>
               );

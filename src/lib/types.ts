@@ -10,7 +10,7 @@ export type Province = {
 
 export type Connection = [string, string, number]; // [provinceA, provinceB, weight]
 
-export type ActionType = 'health' | 'checkpoint' | 'medical';
+export type ActionType = 'health' | 'checkpoint' | 'medical' | 'relief';
 
 export type ProvinceState = {
   infected: number;
@@ -89,6 +89,7 @@ export type GameState = {
   history: { day: number; frac: number }[];
   severityScore: number;
   research: number; // 0-100
+  researchDaysRemaining: number; // days remaining on funded research contracts
   vaccineReady: boolean;
   peaked: boolean;
   ended: boolean;

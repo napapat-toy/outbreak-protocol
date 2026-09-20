@@ -66,12 +66,12 @@ export function GuideModal({ isOpen, onClose }: GuideModalProps) {
           </p>
         </div>
 
-        {/* 3. The 3 Deployment Actions */}
+        {/* 3. The Deployment Actions */}
         <div className="space-y-2">
           <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-            🚀 3 มาตรการสั่งการประจำจังหวัด
+            🚀 มาตรการสั่งการประจำจังหวัด
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-2.5">
               <div className="font-bold text-white flex items-center gap-1">
                 <span>{ACTIONS.health.icon}</span> {ACTIONS.health.name}
@@ -88,7 +88,7 @@ export function GuideModal({ isOpen, onClose }: GuideModalProps) {
               </div>
               <div className="text-amber-400 font-mono text-[10px] my-0.5">ราคา 20G • 5 วัน</div>
               <p className="text-[10px] text-slate-400 leading-snug">
-                <strong>ลดการแพร่ข้ามจังหวัดลง 50%</strong> (แนะนำให้ตั้งที่ กทม. เพื่อกันไม่ให้เชื้อกระจายสู่ปริมณฑล)
+                <strong>ลดการแพร่ข้ามจังหวัดลง 50%</strong> (แนะนำตั้งที่ กทม. เพื่อกันเชื้อกระจาย)
               </p>
             </div>
 
@@ -98,7 +98,17 @@ export function GuideModal({ isOpen, onClose }: GuideModalProps) {
               </div>
               <div className="text-amber-400 font-mono text-[10px] my-0.5">ราคา 25G • 5 วัน</div>
               <p className="text-[10px] text-slate-400 leading-snug">
-                เร่งการรักษาและลดอัตราตาย ใช้กู้วิกฤตก่อนที่ประชาชนจะหมดความอดทนจนจลาจล
+                เร่งการรักษาและลดอัตราตาย ใช้กู้วิกฤตก่อนที่ประชาชนจะทนไม่ไหว
+              </p>
+            </div>
+
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-2.5">
+              <div className="font-bold text-white flex items-center gap-1">
+                <span>{ACTIONS.relief.icon}</span> {ACTIONS.relief.name}
+              </div>
+              <div className="text-amber-400 font-mono text-[10px] my-0.5">ราคา 20G • ทันที</div>
+              <p className="text-[10px] text-slate-400 leading-snug">
+                ส่งถุงยังชีพ <strong>ลดความไม่พอใจ (Unrest) ทันที 25%</strong> กดใช้ได้แม้กำลังจลาจล!
               </p>
             </div>
           </div>

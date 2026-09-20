@@ -134,6 +134,9 @@ export const WANE_RATE = 0.012;
 
 export const RESEARCH_COST = 25;
 export const RESEARCH_GAIN_BASE = 9;
+export const RESEARCH_CONTRACT_DAYS = 7; // days of active research per 25G contract
+export const RESEARCH_GAIN_DAILY = 1.5; // points per day when research is active
+export const MAX_RESEARCH_QUEUE_DAYS = 21; // player can queue up to 3 research contracts (21 days)
 export const VACCINE_ROLLOUT_RATE = 0.05;
 
 export const UNREST_RIOT_THRESHOLD = 70;
@@ -144,6 +147,8 @@ export const UNREST_GRIEF_FACTOR = 800;
 export const RIOT_BUDGET_PENALTY = 15;
 export const RIOT_CASUALTY_RATE = 0.00003;
 export const RIOT_COLLAPSE_COUNT = 4;
+
+export const RELIEF_UNREST_REDUCTION = 25;
 
 export const ACTIONS: Record<ActionType, ActionConfig> = {
   health: {
@@ -166,5 +171,12 @@ export const ACTIONS: Record<ActionType, ActionConfig> = {
     cost: 25,
     duration: 5,
     desc: 'เร่งการรักษาและลดอัตราการเสียชีวิต',
+  },
+  relief: {
+    name: 'มาตรการเยียวยาฉุกเฉิน',
+    icon: '📦',
+    cost: 20,
+    duration: 0,
+    desc: 'ส่งถุงยังชีพและงบเยียวยา ลดความไม่พอใจ (Unrest) ทันที 25%',
   },
 };

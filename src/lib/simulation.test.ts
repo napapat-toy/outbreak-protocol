@@ -79,16 +79,50 @@ describe('Simulation Engine', () => {
       expect(result.reason).toContain('จลาจล');
     });
 
-    it('invests in research and triggers vaccineReady when reaching 100', () => {
+    it('allows emergency relief during riot to reduce unrest and stop rioting', () => {
       const state = freshState('bkk', 'flu');
-      state.research = 95;
+      state.budget = 50;
+      state.provinces['bkk'].unrest = 80;
+      state.provinces['bkk'].rioting = true;
+
+      const result = applyAction(state, 'bkk', 'relief');
+      expect(result.success).toBe(true);
+      expect(result.nextState.budget).toBe(50 - ACTIONS.relief.cost);
+      expect(result.nextState.provinces['bkk'].unrest).toBe(55); // 80 - 25
+      expect(result.nextState.provinces['bkk'].rioting).toBe(false); // 55 < 70
+    });
+
+    it('rejects emergency relief if budget is insufficient', () => {
+      const state = freshState('bkk', 'flu');
+      state.budget = 10;
+      const result = applyAction(state, 'bkk', 'relief');
+      expect(result.success).toBe(false);
+      expect(result.reason).toContain('งบประมาณไม่เพียงพอ');
+    });
+
+    it('invests in research contract and advances research day-by-day until vaccineReady', () => {
+      const state = freshState('bkk', 'flu');
       state.budget = 50;
 
-      const result = investResearch(state);
-      expect(result.success).toBe(true);
-      expect(result.nextState.budget).toBe(50 - RESEARCH_COST);
-      expect(result.nextState.research).toBe(100);
-      expect(result.nextState.vaccineReady).toBe(true);
+      const investResult = investResearch(state);
+      expect(investResult.success).toBe(true);
+      expect(investResult.nextState.budget).toBe(50 - RESEARCH_COST);
+      expect(investResult.nextState.researchDaysRemaining).toBe(7);
+
+      // Simulate tick - research should advance
+      const tick1 = simulateTick(investResult.nextState);
+      expect(tick1.nextState.research).toBeGreaterThan(0);
+      expect(tick1.nextState.researchDaysRemaining).toBe(6);
+
+      // When reaching 100%, vaccineReady becomes true
+      const nearReadyState = {
+        ...investResult.nextState,
+        research: 99,
+        researchDaysRemaining: 2,
+      };
+      const tickReady = simulateTick(nearReadyState);
+      expect(tickReady.nextState.research).toBe(100);
+      expect(tickReady.nextState.vaccineReady).toBe(true);
     });
   });
 
@@ -190,6 +224,22 @@ describe('Simulation Engine', () => {
       expect(nextState.endResult?.type).toBe('containment_win');
       expect(nextState.endResult?.won).toBe(true);
       expect(nextState.endResult?.grade).toBeDefined();
+    });
+
+    it('triggers containment win if vaccineReady is true, frac < 0.1% and day > 6 even without peaked', () => {
+      const state = freshState('bkk', 'flu');
+      state.day = 10;
+      state.vaccineReady = true;
+      state.peaked = false;
+      for (const p of PROVINCES) {
+        state.provinces[p.id].infected = 0;
+      }
+      state.provinces['bkk'].infected = 5; // < 0.1%
+
+      const { nextState } = simulateTick(state);
+      expect(nextState.ended).toBe(true);
+      expect(nextState.endResult?.type).toBe('containment_win');
+      expect(nextState.endResult?.won).toBe(true);
     });
 
     it('calculates grade correctly according to death fraction', () => {

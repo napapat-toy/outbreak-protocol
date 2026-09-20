@@ -94,11 +94,12 @@ export function GameOverModal({
               ({Math.round(totalDead).toLocaleString()} คน)
             </div>
           </div>
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl">
-            <div className="text-[10px] text-slate-400">ความสูญเสียสะสม</div>
-            <div className="font-bold text-sm text-amber-400 mt-0.5">
-              {Math.round(state.severityScore / 1000).toLocaleString()}k
+          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl" title="คะแนนความเสียหายสะสม (Infected-Days: ยิ่งคุมโรคได้ไว คะแนนยิ่งต่ำ)">
+            <div className="text-[10px] text-slate-400">ความเสียหายสะสม</div>
+            <div className="font-bold text-sm text-amber-400 mt-0.5 font-mono">
+              {Math.round(state.severityScore).toLocaleString()}
             </div>
+            <div className="text-[9px] text-slate-500">คน-วัน (ยิ่งน้อยยิ่งดี)</div>
           </div>
         </div>
 

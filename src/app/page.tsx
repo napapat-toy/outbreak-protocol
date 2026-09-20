@@ -1,16 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EpidemicChart } from '../components/EpidemicChart';
-import { EventLog } from '../components/EventLog';
+import { AnalyticsDrawer } from '../components/AnalyticsDrawer';
 import { GameControls } from '../components/GameControls';
 import { GameMap } from '../components/GameMap';
 import { GameOverModal } from '../components/GameOverModal';
 import { GameSetupModal } from '../components/GameSetupModal';
 import { GuideModal } from '../components/GuideModal';
-import { MissionObjectives } from '../components/MissionObjectives';
-import { ProvincePanel } from '../components/ProvincePanel';
-import { ResearchPanel } from '../components/ResearchPanel';
 import { TopBar } from '../components/TopBar';
 import { ACTIONS, DIFFICULTIES, PATHOGENS } from '../lib/constants';
 import {
@@ -27,7 +23,7 @@ export default function GamePage() {
     freshState('bkk', 'flu', 'casual')
   );
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [sliderSpeed, setSliderSpeed] = useState<number>(800); // 1400 - 800 = 600ms per tick
+  const [sliderSpeed, setSliderSpeed] = useState<number>(800); // default 2x speed (600ms per tick)
   const [selectedProvinceId, setSelectedProvinceId] = useState<string | null>('bkk');
   const [events, setEvents] = useState<GameLogEvent[]>([
     {
@@ -39,6 +35,7 @@ export default function GamePage() {
   ]);
   const [isSetupOpen, setIsSetupOpen] = useState<boolean>(false);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState<boolean>(false);
   const [isGameOverDismissed, setIsGameOverDismissed] = useState<boolean>(false);
 
   const showGameOverModal = gameState.ended && !isGameOverDismissed;
@@ -179,68 +176,56 @@ export default function GamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans select-none">
       {/* Top Header */}
       <TopBar
         state={gameState}
         onNewGame={handleOpenSetup}
         onOpenGuide={() => setIsGuideOpen(true)}
+        onToggleAnalytics={() => setIsAnalyticsOpen((prev) => !prev)}
+        isAnalyticsOpen={isAnalyticsOpen}
+        onInvestResearch={handleInvestResearch}
       />
 
-      {/* Main Content Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        {/* Left Column: Mission HUD + Controls + Interactive SVG Map + Epidemic Curve (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-3 sm:gap-4">
-          {/* Mission Objectives HUD */}
-          <MissionObjectives
-            state={gameState}
-            onOpenGuide={() => setIsGuideOpen(true)}
-          />
-
-          {/* Time & Speed Controls */}
-          <GameControls
-            day={gameState.day}
-            isRunning={isRunning}
-            sliderSpeed={sliderSpeed}
-            isEnded={gameState.ended}
-            onNextDay={handleNextDay}
-            onTogglePlay={() => setIsRunning((prev) => !prev)}
-            onSpeedChange={setSliderSpeed}
-          />
-
-          {/* Tactical SVG Map */}
+      {/* Main Map Arena */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-2 sm:p-4 flex flex-col items-center justify-center relative">
+        <div className="w-full relative">
+          {/* Tactical Map with integrated floating action popover & alert ticker */}
           <GameMap
             state={gameState}
             selectedProvinceId={selectedProvinceId}
             onSelectProvince={setSelectedProvinceId}
-          />
-
-          {/* Epidemic Curve Chart */}
-          <EpidemicChart history={gameState.history} />
-        </div>
-
-        {/* Right Column: Province Detail + Vaccine Research + Event Logs (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-4">
-          {/* Province Panel */}
-          <ProvincePanel
-            provinceId={selectedProvinceId}
-            state={gameState}
             onDeployAction={handleDeployAction}
-            onClose={() => setSelectedProvinceId(null)}
+            latestEvent={events[0]}
           />
 
-          {/* Research Panel */}
-          <ResearchPanel state={gameState} onInvest={handleInvestResearch} />
-
-          {/* Live Intel / Event Log */}
-          <EventLog events={events} />
+          {/* Floating Time Controls Bar (Capsule at bottom center) */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+            <GameControls
+              day={gameState.day}
+              isRunning={isRunning}
+              sliderSpeed={sliderSpeed}
+              isEnded={gameState.ended}
+              onNextDay={handleNextDay}
+              onTogglePlay={() => setIsRunning((prev) => !prev)}
+              onSpeedChange={setSliderSpeed}
+            />
+          </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-3 px-4 text-center text-[11px] text-slate-500">
-        Outbreak Protocol v0.1.0 • Thai Outbreak Strategy Game • อ้างอิงระบบระบาดวิทยา 10 จังหวัดภาคกลาง
+      {/* Minimal Bottom Bar */}
+      <footer className="border-t border-slate-900 py-2.5 px-4 text-center text-[11px] text-slate-500">
+        Outbreak Protocol • คลิกที่จังหวัดบนแผนที่เพื่อส่งหน่วยงาน • เปิดดูสถิติกราฟที่ปุ่ม &quot;ข้อมูลวิเคราะห์&quot; มุมขวาบน
       </footer>
+
+      {/* Analytics & Deep Intel Drawer */}
+      <AnalyticsDrawer
+        isOpen={isAnalyticsOpen}
+        state={gameState}
+        events={events}
+        onClose={() => setIsAnalyticsOpen(false)}
+      />
 
       {/* Modals */}
       <GameSetupModal

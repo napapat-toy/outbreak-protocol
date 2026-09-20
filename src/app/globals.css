@@ -18,6 +18,7 @@ body {
     opacity: 0;
     transform: scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -28,18 +29,41 @@ body {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes bounceSubtle {
+
+  0%,
+  100% {
+    transform: translateY(-40px);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 1s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #0f172a;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #334155;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }

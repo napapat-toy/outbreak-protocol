@@ -12,7 +12,10 @@ import {
   PATHOGENS,
   PROVINCES,
   RESEARCH_COST,
-  RESEARCH_GAIN_BASE,
+  RESEARCH_CONTRACT_DAYS,
+  RESEARCH_GAIN_DAILY,
+  MAX_RESEARCH_QUEUE_DAYS,
+  RELIEF_UNREST_REDUCTION,
   RIOT_BUDGET_PENALTY,
   RIOT_CASUALTY_RATE,
   RIOT_COLLAPSE_COUNT,
@@ -91,6 +94,7 @@ export function freshState(
     history: [{ day: 0, frac: initialFrac }],
     severityScore: 0,
     research: 0,
+    researchDaysRemaining: 0,
     vaccineReady: false,
     peaked: false,
     ended: false,
@@ -113,6 +117,30 @@ export function applyAction(
 
   if (provinceState.collapsed) {
     return { nextState: state, success: false, reason: 'จังหวัดนี้กลายเป็นเขตมรณะแล้ว' };
+  }
+
+  // Relief aid specifically targets unrest and can be used during riots
+  if (actionKey === 'relief') {
+    const action = ACTIONS.relief;
+    if (state.budget < action.cost) {
+      return { nextState: state, success: false, reason: 'งบประมาณไม่เพียงพอ' };
+    }
+    const nextUnrest = Math.max(0, provinceState.unrest - RELIEF_UNREST_REDUCTION);
+    const nextRioting = nextUnrest >= UNREST_RIOT_THRESHOLD;
+    const nextProvinces = { ...state.provinces };
+    nextProvinces[provinceId] = {
+      ...provinceState,
+      unrest: nextUnrest,
+      rioting: nextRioting,
+    };
+    return {
+      nextState: {
+        ...state,
+        budget: state.budget - action.cost,
+        provinces: nextProvinces,
+      },
+      success: true,
+    };
   }
 
   if (provinceState.rioting) {
@@ -158,18 +186,19 @@ export function investResearch(state: GameState): {
   if (state.budget < RESEARCH_COST) {
     return { nextState: state, success: false, reason: 'งบประมาณไม่เพียงพอ' };
   }
-
-  const pathogen = PATHOGENS[state.pathogenId];
-  const gain = RESEARCH_GAIN_BASE * pathogen.treatability;
-  const newResearch = Math.min(100, state.research + gain);
-  const vaccineReady = newResearch >= 100;
+  if (state.researchDaysRemaining >= MAX_RESEARCH_QUEUE_DAYS) {
+    return {
+      nextState: state,
+      success: false,
+      reason: `ทีมวิจัยทำงานเต็มกำลังแล้ว (จองล่วงหน้าได้สูงสุด ${MAX_RESEARCH_QUEUE_DAYS} วัน)`,
+    };
+  }
 
   return {
     nextState: {
       ...state,
       budget: state.budget - RESEARCH_COST,
-      research: newResearch,
-      vaccineReady,
+      researchDaysRemaining: state.researchDaysRemaining + RESEARCH_CONTRACT_DAYS,
     },
     success: true,
   };
@@ -195,6 +224,27 @@ export function simulateTick(state: GameState): TickResult {
   const infRate = BASE_INFECTION_RATE * pathogen.infectionMult;
   const recRate = BASE_RECOVERY_RATE * pathogen.recoveryMult;
   const baseCfr = CASE_FATALITY_RATE * pathogen.cfrMult;
+
+  // Day-by-day Research Progress
+  let nextResearch = state.research;
+  let nextResearchDays = state.researchDaysRemaining;
+  let nextVaccineReady = state.vaccineReady;
+
+  if (!nextVaccineReady && nextResearchDays > 0) {
+    const dailyGain = RESEARCH_GAIN_DAILY * pathogen.treatability;
+    nextResearch = Math.min(100, +(nextResearch + dailyGain).toFixed(2));
+    nextResearchDays -= 1;
+
+    if (nextResearch >= 100) {
+      nextVaccineReady = true;
+      events.push({
+        id: `vac-ready-${Date.now()}-${nextDay}`,
+        day: nextDay,
+        text: `🎉 วิจัยวัคซีนต้าน ${pathogen.name} สำเร็จ 100%! เริ่มแจกจ่ายฉีดวัคซีนวันละ 5% ของประชากรทันที`,
+        type: 'success',
+      });
+    }
+  }
 
   // Clone province states and update measure durations
   const workingProvinces: { [id: string]: ProvinceState } = {};
@@ -304,7 +354,7 @@ export function simulateTick(state: GameState): TickResult {
 
     // 6. Vaccine rollout
     let nextVaccinated = pState.vaccinated;
-    if (state.vaccineReady) {
+    if (nextVaccineReady) {
       const stillSusceptible = Math.max(
         0,
         prov.pop - nextInfected - nextRecovered - nextDead - nextVaccinated
@@ -433,7 +483,7 @@ export function simulateTick(state: GameState): TickResult {
       description: `มีผู้ติดเชื้อพร้อมกันทั่วทั้งภูมิภาคมากกว่า 85% ระบบสาธารณสุขล่มสลายอย่างสิ้นเชิง`,
       won: false,
     };
-  } else if (nextPeaked && frac < 0.001 && nextDay > 6) {
+  } else if ((nextPeaked || nextVaccineReady) && frac < 0.001 && nextDay > 6) {
     ended = true;
     const gradeInfo = calculateGrade(deathFrac);
     endResult = {
@@ -465,8 +515,9 @@ export function simulateTick(state: GameState): TickResult {
     provinces: workingProvinces,
     history: nextHistory,
     severityScore: nextSeverity,
-    research: state.research,
-    vaccineReady: state.vaccineReady,
+    research: nextResearch,
+    researchDaysRemaining: nextResearchDays,
+    vaccineReady: nextVaccineReady,
     peaked: nextPeaked,
     ended,
     endResult,

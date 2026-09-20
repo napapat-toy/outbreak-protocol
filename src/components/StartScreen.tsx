@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
+import { APP_VERSION } from '../lib/constants';
 import { clearSavedGame, getRawSavedData, getSavedGameSummary } from '../lib/storage';
 
 interface StartScreenProps {
@@ -186,7 +187,7 @@ export function StartScreen({
 
         {/* Footer Meta */}
         <div className="text-[11px] text-slate-500 pt-4 flex items-center justify-center gap-3">
-          <span>Outbreak Protocol v0.2.0</span>
+          <span>Outbreak Protocol v{APP_VERSION}</span>
           <span>•</span>
           <span>โมเดลระบาดวิทยาภาคกลาง 10 จังหวัด</span>
         </div>

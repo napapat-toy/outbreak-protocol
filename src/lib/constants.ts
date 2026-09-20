@@ -9,6 +9,8 @@ import {
   Province,
 } from './types';
 
+export const APP_VERSION = '0.2.0';
+
 export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
   casual: {
     id: 'casual',

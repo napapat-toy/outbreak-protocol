@@ -9,6 +9,7 @@ import { LiveEventBanner } from '../components/topbar/LiveEventBanner';
 import { StartScreen } from '../components/StartScreen';
 import { TopBar } from '../components/TopBar';
 import { useGameEngine } from '../hooks/useGameEngine';
+import { APP_VERSION } from '../lib/constants';
 
 export default function GamePage() {
   const {
@@ -86,7 +87,7 @@ export default function GamePage() {
           <footer className="border-t border-slate-900/80 bg-slate-950/90 py-1 px-4 text-[11px] text-slate-500 flex-shrink-0 flex items-center justify-between z-10">
             <span className="hidden sm:inline">Outbreak Protocol • ศูนย์บัญชาการแผนเผชิญเหตุโรคระบาด 10 จังหวัดภาคกลาง</span>
             <span className="mx-auto sm:mx-0">คลิกที่จังหวัดบนแผนที่เพื่อสั่งการ • Space: เดิน/หยุด • ⏩ Enter/→: +1 วัน • 1/2/3: สปีด</span>
-            <span className="hidden md:inline font-mono text-[10px] text-slate-600">v0.2.0 • SIR-V Model</span>
+            <span className="hidden md:inline font-mono text-[10px] text-slate-600">v{APP_VERSION} • SIR-V Model</span>
           </footer>
 
           {/* Analytics & Deep Intel Drawer */}

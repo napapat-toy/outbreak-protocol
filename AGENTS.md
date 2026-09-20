@@ -68,6 +68,13 @@ Outbreak Protocol — เว็บแอปเกมกลยุทธ์แน�
 - ถ้ามี API endpoint สำหรับ save/load game ให้ validate userId/session ก่อนเขียนหรืออ่าน document เสมอ
   ป้องกันคนอื่นแก้ game state ของคนอื่น
 
+## Versioning Policy
+เมื่อต้องการปรับเลข Version ของเกม (เช่น จาก 0.2.0 เป็น 0.3.0) ต้องอัปเดตไฟล์ดังต่อไปนี้ให้ตรงกันเสมอ:
+1. `package.json`: ฟิลด์ `"version": "x.y.z"`
+   - หลังแก้ไขเสร็จ ให้รัน `npm install --package-lock-only` เพื่อ sync เลขเวอร์ชันใน `package-lock.json` ให้ตรงกัน
+2. `src/lib/constants.ts`: ค่าคงที่ `export const APP_VERSION = 'x.y.z';`
+   - จุดนี้เป็น Single Source of Truth สำหรับ UI ทั้งหมด (หน้า StartScreen, Footer ของ Game Arena ฯลฯ ดึงค่านี้ไปแสดงผลอัตโนมัติ)
+
 ## PR Instructions
 - Commit message ภาษาไทยหรืออังกฤษก็ได้ แต่ให้สื่อว่าแก้ไฟล์ไหน/ทำไม เช่น `feat: เพิ่มระบบวิจัยวัคซีน`
 - ก่อน commit ให้รัน lint + test (ถ้ามี) ให้ผ่านก่อนเสมอ

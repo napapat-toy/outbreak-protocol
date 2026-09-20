@@ -2,6 +2,7 @@
 
 import { TOTAL_POPULATION } from '../lib/constants';
 import { GameState } from '../lib/types';
+import { BaseModal } from './shared/BaseModal';
 
 interface GameOverModalProps {
   isOpen: boolean;
@@ -39,9 +40,13 @@ export function GameOverModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl flex flex-col items-center text-center gap-5 text-slate-100 max-h-[95vh] overflow-y-auto custom-scrollbar">
-        {/* Banner Icon */}
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-lg"
+      className="items-center text-center gap-5 p-6"
+    >
+      {/* Banner Icon */}
         <div
           className={`w-20 h-20 rounded-3xl flex items-center justify-center text-4xl shadow-xl border ${
             isWon
@@ -81,11 +86,11 @@ export function GameOverModal({
 
         {/* Final Metrics Summary */}
         <div className="grid grid-cols-3 gap-2 w-full pt-3 border-t border-slate-800 text-xs">
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl">
+          <div className="card-mini">
             <div className="text-[10px] text-slate-400">ระยะเวลา</div>
             <div className="font-bold text-sm text-white mt-0.5">{state.day} วัน</div>
           </div>
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl">
+          <div className="card-mini">
             <div className="text-[10px] text-slate-400">ผู้เสียชีวิต</div>
             <div className="font-bold text-sm text-rose-400 mt-0.5">
               {deathPct}%
@@ -94,7 +99,7 @@ export function GameOverModal({
               ({Math.round(totalDead).toLocaleString()} คน)
             </div>
           </div>
-          <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl" title="คะแนนความเสียหายสะสม (Infected-Days: ยิ่งคุมโรคได้ไว คะแนนยิ่งต่ำ)">
+          <div className="card-mini" title="คะแนนความเสียหายสะสม (Infected-Days: ยิ่งคุมโรคได้ไว คะแนนยิ่งต่ำ)">
             <div className="text-[10px] text-slate-400">ความเสียหายสะสม</div>
             <div className="font-bold text-sm text-amber-400 mt-0.5 font-mono">
               {Math.round(state.severityScore).toLocaleString()}
@@ -132,7 +137,6 @@ export function GameOverModal({
             สำรวจแผนที่หลังจบภารกิจ ➔
           </button>
         )}
-      </div>
-    </div>
+    </BaseModal>
   );
 }

@@ -80,6 +80,7 @@ export function GameMap({
       {/* Tactical Province Action Side Dock */}
       {selectedProvinceId && (
         <div
+          onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
           className="absolute top-0 right-0 h-full z-20 pointer-events-auto shadow-2xl"

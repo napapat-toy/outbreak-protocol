@@ -25,29 +25,30 @@ export function MapNode({
     MAP_CONFIG.node.baseRadius + Math.sqrt(province.pop) / MAP_CONFIG.node.populationScaleDivisor
   );
 
+  const measures = provinceState.measures;
+  const hasMeasures = (measures.health ?? 0) > 0 || (measures.checkpoint ?? 0) > 0 || (measures.medical ?? 0) > 0;
+
   return (
     <g
       transform={`translate(${province.x}, ${province.y})`}
       onClick={(e) => {
         e.stopPropagation();
-        if (canClick()) {
-          onSelect(province.id);
-        }
+        if (canClick()) onSelect(province.id);
       }}
       className="cursor-pointer group select-none"
     >
-      {/* Pulsing ring for high infection or riot */}
+      {/* Pulse ring for danger */}
       {(frac > 0.05 || provinceState.rioting) && !provinceState.collapsed && (
         <circle
           r={radius + 8}
           fill="none"
           stroke={colors.stroke}
           strokeWidth={1.5}
-          className="animate-ping opacity-35"
+          className="animate-ping opacity-35 pointer-events-none"
         />
       )}
 
-      {/* Selection indicator ring */}
+      {/* Selection indicator */}
       {isSelected && (
         <circle
           r={radius + 6}
@@ -55,7 +56,7 @@ export function MapNode({
           stroke="#38bdf8"
           strokeWidth={2.5}
           strokeDasharray="4,2"
-          className="animate-[spin_6s_linear_infinite]"
+          className="animate-[spin_6s_linear_infinite] pointer-events-none"
         />
       )}
 
@@ -68,69 +69,42 @@ export function MapNode({
         className="transition-all duration-200 group-hover:brightness-125 shadow-lg"
       />
 
-      {/* Hub indicator badge */}
+      {/* Hub badge */}
       {province.hub && (
-        <g>
-          <circle
-            r={radius - 4}
-            fill="none"
-            stroke="#ffffff33"
-            strokeWidth={1}
-            strokeDasharray="2,2"
-          />
-          <text
-            x={radius - 5}
-            y={-radius + 7}
-            fontSize="9"
-            fill="#38bdf8"
-            className="pointer-events-none select-none font-bold"
-          >
-            ✈
-          </text>
+        <g className="pointer-events-none select-none">
+          <circle r={radius - 4} fill="none" stroke="#ffffff33" strokeWidth={1} strokeDasharray="2,2" />
+          <text x={radius - 5} y={-radius + 7} fontSize="9" fill="#38bdf8" className="font-bold">✈</text>
         </g>
       )}
 
-      {/* Status Badges on Node */}
-      {provinceState.collapsed ? (
-        <text textAnchor="middle" dominantBaseline="central" fontSize="13">
-          💀
-        </text>
-      ) : provinceState.rioting ? (
-        <text
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="16"
-          className="animate-bounce-subtle"
-        >
-          🔥
-        </text>
-      ) : (
-        <text
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="#f8fafc"
-          fontSize={radius > 20 ? '11' : '10'}
-          fontWeight="bold"
-          className="pointer-events-none font-mono"
-        >
-          {frac >= 0.001 ? `${(frac * 100).toFixed(0)}%` : '0%'}
-        </text>
+      {/* Consolidated Center Status: 💀 / 🔥 / % text in single tag */}
+      <text
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill="#f8fafc"
+        fontSize={provinceState.rioting ? '16' : provinceState.collapsed ? '13' : radius > 20 ? '11' : '10'}
+        fontWeight="bold"
+        className={`pointer-events-none select-none font-mono ${provinceState.rioting ? 'animate-bounce-subtle' : ''}`}
+      >
+        {provinceState.collapsed
+          ? '💀'
+          : provinceState.rioting
+          ? '🔥'
+          : frac >= 0.001
+          ? `${(frac * 100).toFixed(0)}%`
+          : '0%'}
+      </text>
+
+      {/* Active Measures Badges */}
+      {hasMeasures && (
+        <g transform={`translate(${radius - 4}, ${-radius + 4})`} className="pointer-events-none select-none">
+          {(measures.health ?? 0) > 0 && <text x={-14} y={-4} fontSize="9">🏥</text>}
+          {(measures.checkpoint ?? 0) > 0 && <text x={-4} y={-4} fontSize="9">🚧</text>}
+          {(measures.medical ?? 0) > 0 && <text x={6} y={-4} fontSize="9">🚑</text>}
+        </g>
       )}
 
-      {/* Active Measure mini-icons */}
-      <g transform={`translate(${radius - 4}, ${-radius + 4})`}>
-        {(provinceState.measures.health ?? 0) > 0 && (
-          <text x={-14} y={-4} fontSize="9">🏥</text>
-        )}
-        {(provinceState.measures.checkpoint ?? 0) > 0 && (
-          <text x={-4} y={-4} fontSize="9">🚧</text>
-        )}
-        {(provinceState.measures.medical ?? 0) > 0 && (
-          <text x={6} y={-4} fontSize="9">🚑</text>
-        )}
-      </g>
-
-      {/* Province Label (Thai Name) */}
+      {/* Province Labels */}
       <text
         y={radius + 13}
         textAnchor="middle"
@@ -141,8 +115,6 @@ export function MapNode({
       >
         {province.name}
       </text>
-
-      {/* English Name (smaller subtitle) */}
       <text
         y={radius + 23}
         textAnchor="middle"

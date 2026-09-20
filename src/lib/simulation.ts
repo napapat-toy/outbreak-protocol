@@ -42,6 +42,16 @@ export function getProvinceById(id: string) {
   return PROVINCES.find((p) => p.id === id);
 }
 
+export function getConnectedProvinces(id: string) {
+  const neighborIds = CONNECTIONS
+    .filter(([a, b]) => a === id || b === id)
+    .map(([a, b]) => (a === id ? b : a));
+
+  return neighborIds
+    .map((neighborId) => PROVINCES.find((p) => p.id === neighborId))
+    .filter((p): p is (typeof PROVINCES)[number] => Boolean(p));
+}
+
 export function getSusceptible(pop: number, state: ProvinceState): number {
   return Math.max(0, pop - state.infected - state.recovered - state.dead - state.vaccinated);
 }

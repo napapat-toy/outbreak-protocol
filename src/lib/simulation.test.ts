@@ -8,6 +8,8 @@ import {
   applyAction,
   calculateGrade,
   freshState,
+  getConnectedProvinces,
+  getProvinceById,
   investResearch,
   simulateTick,
 } from './simulation';
@@ -249,6 +251,27 @@ describe('Simulation Engine', () => {
       expect(calculateGrade(0.04).grade).toBe('C');
       expect(calculateGrade(0.10).grade).toBe('D');
       expect(calculateGrade(0.20).grade).toBe('F');
+    });
+  });
+
+  describe('helper functions', () => {
+    it('returns province by id correctly', () => {
+      const bkk = getProvinceById('bkk');
+      expect(bkk?.name).toBe('กรุงเทพมหานคร');
+      expect(getProvinceById('non_existent')).toBeUndefined();
+    });
+
+    it('returns connected neighboring provinces for a given province', () => {
+      const bkkNeighbors = getConnectedProvinces('bkk');
+      const neighborIds = bkkNeighbors.map((p) => p.id);
+      // BKK connects to non, ptt, spk, npt, skn
+      expect(neighborIds).toContain('non');
+      expect(neighborIds).toContain('ptt');
+      expect(neighborIds).toContain('spk');
+      expect(neighborIds).toContain('npt');
+      expect(neighborIds).toContain('skn');
+      expect(neighborIds).not.toContain('bkk');
+      expect(neighborIds).not.toContain('aya');
     });
   });
 });

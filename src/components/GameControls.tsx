@@ -27,16 +27,12 @@ export function GameControls({
   ];
 
   return (
-    <div className="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-2 sm:px-4 sm:py-2.5 shadow-2xl backdrop-blur-xl flex items-center justify-between sm:justify-center gap-2 sm:gap-4 text-xs select-none">
+    <div className="glass-panel p-2 sm:px-4 sm:py-2.5 flex items-center justify-between sm:justify-center gap-2 sm:gap-4 text-xs select-none">
       {/* Play/Pause Button */}
       <button
         onClick={onTogglePlay}
         disabled={isEnded}
-        className={`px-3.5 py-2 rounded-xl font-bold transition-all border shadow-lg active:scale-95 cursor-pointer disabled:cursor-not-allowed flex items-center gap-1.5 ${
-          isRunning
-            ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 shadow-amber-950/40'
-            : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-emerald-950/40'
-        }`}
+        className={isRunning ? 'btn-warning' : 'btn-success'}
       >
         <span>{isRunning ? '⏸️' : '▶️'}</span>
         <span className="hidden sm:inline">{isRunning ? 'หยุดชั่วคราว' : 'เล่นต่อเนื่อง'}</span>
@@ -46,7 +42,7 @@ export function GameControls({
       <button
         onClick={onNextDay}
         disabled={isRunning || isEnded}
-        className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold transition-all border border-indigo-500/50 shadow-lg shadow-indigo-950/50 active:scale-95 cursor-pointer disabled:cursor-not-allowed flex items-center gap-1.5"
+        className="btn-primary"
       >
         <span>⏩</span>
         <span>+1 วัน</span>

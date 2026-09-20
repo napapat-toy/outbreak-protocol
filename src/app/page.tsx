@@ -1,7 +1,6 @@
 'use client';
 
 import { AnalyticsDrawer } from '../components/AnalyticsDrawer';
-import { GameControls } from '../components/GameControls';
 import { GameMap } from '../components/GameMap';
 import { GameOverModal } from '../components/GameOverModal';
 import { GameSetupModal } from '../components/GameSetupModal';
@@ -23,6 +22,8 @@ export default function GamePage() {
     actions,
   } = useGameEngine();
 
+  const isModalOpen = modals.isSetupOpen || modals.isGuideOpen || modals.showGameOverModal;
+
   return (
     <div className="h-screen w-screen bg-[#070b14] text-slate-100 flex flex-col font-sans select-none overflow-hidden">
       {isInMainMenu ? (
@@ -35,7 +36,7 @@ export default function GamePage() {
       ) : (
         /* Main Command Bridge & Tactical Map */
         <>
-          {/* Top Header & HUD */}
+          {/* Top Header & HUD with integrated Time Engine */}
           <TopBar
             state={gameState}
             onNewGame={() => {
@@ -49,6 +50,19 @@ export default function GamePage() {
             isAnalyticsOpen={modals.isAnalyticsOpen}
             onInvestResearch={actions.investResearch}
             onReturnToMenu={actions.returnToMainMenu}
+            isRunning={isRunning}
+            sliderSpeed={sliderSpeed}
+            onNextDay={actions.nextDay}
+            onTogglePlay={actions.togglePlay}
+            onSpeedChange={actions.setSliderSpeed}
+            disabledShortcuts={isModalOpen}
+            onEscape={() => {
+              if (selectedProvinceId) {
+                actions.setSelectedProvinceId(null);
+              } else if (modals.isAnalyticsOpen) {
+                modals.closeAnalytics();
+              }
+            }}
           />
 
           {/* Sub-Header Live Event Banner */}
@@ -57,7 +71,7 @@ export default function GamePage() {
             onOpenHistory={modals.openAnalytics}
           />
 
-          {/* Main Map Arena - Edge-to-Edge Full Viewport */}
+          {/* Main Map Arena - 100% Unobstructed Full Viewport */}
           <main className="flex-1 w-full h-full relative overflow-hidden flex flex-col">
             {/* Tactical Map with integrated side dock */}
             <GameMap
@@ -66,25 +80,12 @@ export default function GamePage() {
               onSelectProvince={actions.setSelectedProvinceId}
               onDeployAction={actions.deployAction}
             />
-
-            {/* Floating Time Controls Bar (Capsule at bottom center) */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-              <GameControls
-                day={gameState.day}
-                isRunning={isRunning}
-                sliderSpeed={sliderSpeed}
-                isEnded={gameState.ended}
-                onNextDay={actions.nextDay}
-                onTogglePlay={actions.togglePlay}
-                onSpeedChange={actions.setSliderSpeed}
-              />
-            </div>
           </main>
 
           {/* Minimal Bottom Bar */}
           <footer className="border-t border-slate-900/80 bg-slate-950/90 py-1 px-4 text-[11px] text-slate-500 flex-shrink-0 flex items-center justify-between z-10">
             <span className="hidden sm:inline">Outbreak Protocol • ศูนย์บัญชาการแผนเผชิญเหตุโรคระบาด 10 จังหวัดภาคกลาง</span>
-            <span className="mx-auto sm:mx-0">คลิกที่จังหวัดบนแผนที่เพื่อสั่งการ • ลากแผนที่ (Pan) หรือซูมเข้าออกได้อย่างอิสระ</span>
+            <span className="mx-auto sm:mx-0">คลิกที่จังหวัดบนแผนที่เพื่อสั่งการ • Space: เดิน/หยุด • ⏩ Enter/→: +1 วัน • 1/2/3: สปีด</span>
             <span className="hidden md:inline font-mono text-[10px] text-slate-600">v0.2.0 • SIR-V Model</span>
           </footer>
 
@@ -93,6 +94,8 @@ export default function GamePage() {
             isOpen={modals.isAnalyticsOpen}
             state={gameState}
             events={events}
+            selectedProvinceId={selectedProvinceId}
+            onSelectProvince={actions.setSelectedProvinceId}
             onClose={modals.closeAnalytics}
           />
         </>

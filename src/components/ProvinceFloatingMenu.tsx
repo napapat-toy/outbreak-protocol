@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ACTIONS, CONNECTIONS, PROVINCES } from '../lib/constants';
-import { getProvinceById } from '../lib/simulation';
+import { COLLAPSE_FRACTION } from '../lib/constants';
+import { getConnectedProvinces, getProvinceById } from '../lib/simulation';
 import { ActionType, GameState } from '../lib/types';
+import { ActionInfoGuide } from './shared/ActionInfoGuide';
+import { NeighborQuickJump } from './shared/NeighborQuickJump';
 import { PopulationSegmentBar } from './shared/PopulationSegmentBar';
+import { ProvinceActionGrid } from './shared/ProvinceActionGrid';
 import { UnrestMeter } from './shared/UnrestMeter';
 
 interface ProvinceFloatingMenuProps {
@@ -30,19 +33,14 @@ export function ProvinceFloatingMenu({
   const pState = state.provinces[provinceId];
   if (!province || !pState) return null;
 
-  const canDeployStandard = !state.ended && !pState.rioting && !pState.collapsed;
-  const canDeployRelief = !state.ended && !pState.collapsed;
-
-  // Find connected neighboring provinces
-  const neighborIds = CONNECTIONS
-    .filter(([a, b]) => a === province.id || b === province.id)
-    .map(([a, b]) => (a === province.id ? b : a));
-  const neighbors = neighborIds
-    .map((id) => PROVINCES.find((p) => p.id === id))
-    .filter(Boolean);
+  // Find connected neighboring provinces via simulation logic
+  const neighbors = getConnectedProvinces(province.id);
 
   return (
-    <div className="h-full w-72 sm:w-80 bg-slate-900/95 border-l border-slate-700/80 shadow-2xl backdrop-blur-2xl text-slate-100 flex flex-col justify-between p-3.5 sm:p-4 select-none animate-fadeIn overflow-y-auto">
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="h-full w-72 sm:w-80 bg-slate-900/95 border-l border-slate-700/80 shadow-2xl backdrop-blur-2xl text-slate-100 flex flex-col justify-between p-3.5 sm:p-4 select-none animate-fadeIn overflow-y-auto"
+    >
       <div className="flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-800/80 pb-2.5">
@@ -62,7 +60,7 @@ export function ProvinceFloatingMenu({
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800/80 cursor-pointer text-xs transition-colors"
+            className="btn-close"
             title="ปิดหน้าต่าง"
           >
             ✕
@@ -75,7 +73,7 @@ export function ProvinceFloatingMenu({
             <span className="text-base">💀</span>
             <div>
               <div className="font-bold text-white">เขตมรณะ</div>
-              <div className="text-[10px] text-zinc-400">ประชากรเสียชีวิตเกิน 90%</div>
+              <div className="text-[10px] text-zinc-400">ประชากรเสียชีวิตเกิน {Math.round(COLLAPSE_FRACTION * 100)}%</div>
             </div>
           </div>
         ) : pState.rioting ? (
@@ -119,117 +117,25 @@ export function ProvinceFloatingMenu({
           </div>
 
           {/* Collapsible Quick Info Guide */}
-          {showInfo && (
-            <div className="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl text-[10px] text-slate-300 space-y-1.5 animate-fadeIn">
-              <div className="flex items-center gap-1.5 text-white font-semibold">
-                <span>🏥</span> สาธารณสุข (15G) : ลดการแพร่เชื้อในจังหวัด
-              </div>
-              <div className="flex items-center gap-1.5 text-white font-semibold">
-                <span>🚧</span> ปิดด่าน (20G) : ตัดเส้นทางระบาดสู่จังหวัดข้างเคียง 50%
-              </div>
-              <div className="flex items-center gap-1.5 text-white font-semibold">
-                <span>🚑</span> ทีมแพทย์ (25G) : เร่งรักษาหาย 3 เท่า + ลดอัตราตาย
-              </div>
-              <div className="flex items-center gap-1.5 text-amber-300 font-semibold">
-                <span>📦</span> เยียวยา (20G) : ลด Unrest ทันที 25% (ใช้สยบจลาจล)
-              </div>
-            </div>
-          )}
+          {showInfo && <ActionInfoGuide />}
 
-          {/* Action Grid */}
-          <div className="grid grid-cols-2 gap-2">
-            {(Object.keys(ACTIONS) as ActionType[]).map((actionKey) => {
-              const action = ACTIONS[actionKey];
-              const isRelief = actionKey === 'relief';
-              const activeDays = pState.measures[actionKey] ?? 0;
-              const isActive = activeDays > 0;
-              const hasBudget = state.budget >= action.cost;
-              const canDeploy = isRelief ? canDeployRelief : canDeployStandard;
-              const isDisabled = !canDeploy || !hasBudget;
-
-              const isReliefHighlight = isRelief && pState.rioting && hasBudget;
-
-              return (
-                <button
-                  key={actionKey}
-                  onClick={() => onDeployAction(province.id, actionKey)}
-                  disabled={isDisabled}
-                  className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer active:scale-95 disabled:cursor-not-allowed relative ${
-                    isReliefHighlight
-                      ? 'bg-amber-950/70 border-amber-400 text-amber-200 ring-2 ring-amber-500/40 shadow-lg shadow-amber-950/50 animate-pulse'
-                      : isActive
-                      ? 'bg-indigo-950/80 border-indigo-400 text-white shadow-md shadow-indigo-950/50'
-                      : 'bg-slate-950/80 border-slate-800 hover:border-slate-600 disabled:bg-slate-900/50 disabled:border-slate-850 text-slate-200 disabled:text-slate-600'
-                  }`}
-                >
-                  <span className="text-xl">{action.icon}</span>
-                  <span className="text-[11px] font-bold truncate max-w-full">
-                    {actionKey === 'health'
-                      ? 'สาธารณสุข'
-                      : actionKey === 'checkpoint'
-                      ? 'ปิดด่าน'
-                      : actionKey === 'medical'
-                      ? 'ทีมแพทย์'
-                      : 'เยียวยาฉุกเฉิน'}
-                  </span>
-                  <span
-                    className={`text-[9px] font-mono font-semibold ${
-                      isReliefHighlight
-                        ? 'text-amber-300'
-                        : isActive
-                        ? 'text-indigo-300'
-                        : hasBudget
-                        ? 'text-slate-400'
-                        : 'text-rose-500/70'
-                    }`}
-                  >
-                    {isActive
-                      ? `เหลือ ${activeDays} วัน`
-                      : isRelief
-                      ? `${action.cost}G • ลด 25%`
-                      : `${action.cost}G • 5 วัน`}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Action Grid Custom Component */}
+          <ProvinceActionGrid
+            provinceId={province.id}
+            provinceState={pState}
+            budget={state.budget}
+            isGameEnded={state.ended}
+            onDeployAction={onDeployAction}
+          />
         </div>
       </div>
 
-      {/* Connected Neighbor Provinces (Tactical Quick-Jump) */}
-      {neighbors.length > 0 && (
-        <div className="pt-3 mt-2 border-t border-slate-800/80">
-          <div className="text-[10px] font-semibold text-slate-400 mb-1.5">
-            เส้นทางเชื่อมต่อ ({neighbors.length}):
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {neighbors.map((n) => {
-              if (!n) return null;
-              const nState = state.provinces[n.id];
-              const isNRioting = nState?.rioting;
-              const isNInfected = (nState?.infected ?? 0) > 100;
-
-              return (
-                <button
-                  key={n.id}
-                  onClick={() => onSelectProvince?.(n.id)}
-                  className={`text-[10px] px-2 py-1 rounded-lg border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
-                    isNRioting
-                      ? 'bg-rose-950/40 border-rose-800/60 text-rose-300 hover:border-rose-600'
-                      : isNInfected
-                      ? 'bg-amber-950/40 border-amber-800/60 text-amber-300 hover:border-amber-600'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white'
-                  }`}
-                  title={`สลับมุมมองไปยัง ${n.name}`}
-                >
-                  <span>{isNRioting ? '🔥' : isNInfected ? '⚠️' : '📍'}</span>
-                  <span>{n.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Connected Neighbor Provinces Custom Component */}
+      <NeighborQuickJump
+        neighbors={neighbors}
+        provinceStates={state.provinces}
+        onSelectProvince={onSelectProvince}
+      />
     </div>
   );
 }

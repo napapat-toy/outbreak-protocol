@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { DIFFICULTIES, PATHOGENS, PROVINCES } from '../lib/constants';
 import { DifficultyId, PathogenId } from '../lib/types';
 
+import { BaseModal } from './shared/BaseModal';
+
 interface GameSetupModalProps {
   isOpen: boolean;
   onClose?: () => void;
@@ -14,8 +16,6 @@ export function GameSetupModal({ isOpen, onClose, onStart }: GameSetupModalProps
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyId>('casual');
   const [selectedPathogen, setSelectedPathogen] = useState<PathogenId>('flu');
   const [selectedLabId, setSelectedLabId] = useState<string>('bkk');
-
-  if (!isOpen) return null;
 
   const pathogenList = Object.values(PATHOGENS);
   const difficultyList = Object.values(DIFFICULTIES);
@@ -38,22 +38,18 @@ export function GameSetupModal({ isOpen, onClose, onStart }: GameSetupModalProps
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl flex flex-col gap-3.5 text-slate-100 max-h-[94vh] overflow-y-auto custom-scrollbar relative">
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-sm z-10"
-            title="ปิดหน้าต่าง / กลับสู่เกมเดิม"
-          >
-            ✕
-          </button>
-        )}
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-3xl"
+      zIndex="z-[60]"
+      showCloseButton={Boolean(onClose)}
+      className="gap-3.5 max-h-[94vh]"
+    >
 
         {/* Title Header */}
         <div className="text-center space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-500/15 text-rose-300 text-xs font-bold border border-rose-500/30">
+          <div className="badge-cyber badge-cyber-rose">
             <span>☣️</span> ศูนย์บัญชาการแผนเผชิญเหตุโรคระบาด
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide uppercase">
@@ -177,7 +173,7 @@ export function GameSetupModal({ isOpen, onClose, onStart }: GameSetupModalProps
         </div>
 
         {/* Tactical Hint */}
-        <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl px-3.5 py-2 text-xs text-indigo-200 flex items-center gap-2.5">
+        <div className="card-callout card-callout-indigo flex items-center gap-2.5 !p-2.5">
           <span className="text-base flex-shrink-0">💡</span>
           <p className="text-[11px] text-indigo-200/90 leading-relaxed">
             <strong>กฎเหล็กเอาชีวิตรอด:</strong> ทุ่มงบวิจัยวัคซีน (25G) ให้ครบ 100% เพื่อกวาดล้างเชื้อ และใช้ <strong>จุดตรวจ (🚧 Checkpoint)</strong> สกัดกั้น กทม. ช่วยตัดการแพร่ข้ามจังหวัดลง 50%
@@ -203,7 +199,6 @@ export function GameSetupModal({ isOpen, onClose, onStart }: GameSetupModalProps
             <span>เริ่มภารกิจใหม่ (Deploy Protocol)</span>
           </button>
         </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 }

@@ -4,6 +4,7 @@ import {
   MAX_RESEARCH_QUEUE_DAYS,
   RESEARCH_CONTRACT_DAYS,
   RESEARCH_COST,
+  VACCINE_ROLLOUT_RATE,
 } from '../../lib/constants';
 import { GameState } from '../../lib/types';
 
@@ -39,7 +40,7 @@ export function VaccineResearchHUD({ state, onInvestResearch }: VaccineResearchH
                   : 'วิจัยวัคซีน (หยุดชั่วคราว)'}
               </span>
               <span className="text-[11px] font-mono font-bold text-indigo-400">
-                {state.vaccineReady ? 'ฉีด 5%/วัน' : `${researchPct}%`}
+                {state.vaccineReady ? `ฉีด ${Math.round(VACCINE_ROLLOUT_RATE * 100)}%/วัน` : `${researchPct}%`}
               </span>
             </div>
             {/* Mini progress bar */}
